@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Labour Planner 2.0 — Self-Exploration Guide</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --brand: #00a63f;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #e2e8f0;
+        --paper: #f8fafc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+        line-height: 1.55;
+      }
+      .wrap {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+      header.hero {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 28px;
+        margin-bottom: 28px;
+      }
+      .eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--brand);
+        margin: 0 0 8px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      .lede {
+        margin: 0;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      a.btn,
+      button.btn {
+        display: inline-block;
+        background: var(--brand);
+        color: white;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 13px;
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 16px;
+        cursor: pointer;
+      }
+      a.btn.secondary {
+        background: white;
+        color: #334155;
+        border: 1px solid var(--line);
+      }
+      section {
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 24px 28px;
+        margin-bottom: 16px;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      h3 {
+        margin: 18px 0 8px;
+        font-size: 15px;
+      }
+      p,
+      li {
+        font-size: 14.5px;
+        color: #334155;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f8fafc;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+      }
+      .note {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 13.5px;
+        color: #1e40af;
+      }
+      footer {
+        font-size: 12px;
+        color: #94a3b8;
+        text-align: center;
+        margin-top: 8px;
+      }
+      @media print {
+        body {
+          background: white;
+        }
+        .actions,
+        .no-print {
+          display: none;
+        }
+        section,
+        header.hero {
+          break-inside: avoid;
+          border: 0;
+          padding: 0 0 16px;
+          margin: 0 0 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <p class="eyebrow">Mastronardi Produce · Farm Operations</p>
+        <h1>Labour Planner 2.0 — Self-Exploration Guide</h1>
+        <p class="lede">
+          Use this document to click through the prototype on your own. You do not need a presenter,
+          Figma, or Azure access. Every button in the app is live.
+        </p>
+        <div class="actions no-print">
+          <a class="btn" href="/">Open the prototype</a>
+          <button class="btn secondary" type="button" onclick="window.print()">Print / save as PDF</button>
+        </div>
+      </header>
+
+      <section>
+        <h2>1. What you are looking at</h2>
+        <p>
+          Labour Planner 2.0 is the proposed workforce allocation application for Mastronardi Produce
+          Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time
+          slot. Managers review totals and notes. Admins manage users and master data.
+        </p>
+        <p>
+          This prototype shows how that website will look and behave. Azure AD, historic
+          recommendations, Power BI, and Azure SQL are <strong>simulated</strong>. Filters, the grid,
+          calculations, notes, roles, and admin actions work for real in the prototype. Data stays in
+          your browser.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. How to open the prototype</h2>
+        <ol>
+          <li>Open the prototype URL you were given, or click <strong>Open the prototype</strong> above.</li>
+          <li>You should see the Mastronardi Produce sign-in screen.</li>
+          <li>
+            Keep this page nearby, or click <strong>Exploration guide</strong> on the sign-in screen
+            and in the app header.
+          </li>
+        </ol>
+        <p class="note">
+          If the app looks stuck from an earlier session, use Exploration guide → Reset prototype
+          data, then sign in again.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. Sign in as a persona</h2>
+        <p>Production will use Azure AD. Here you pick a role to see different permissions.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Persona</th>
+              <th>Who</th>
+              <th>What you can do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Farm Planner (assigned farms)</td>
+              <td>Alex Rivera, Supervisor</td>
+              <td>Planner + Summary. Only North Farm, Maroa, and Ohio.</td>
+            </tr>
+            <tr>
+              <td>Site Manager (summary only)</td>
+              <td>Sarah Johnson, Operations</td>
+              <td>Summary only. All farms. No grid editing. No Admin.</td>
+            </tr>
+            <tr>
+              <td>System Admin (full access)</td>
+              <td>Jordan Hale, FarmOps IT</td>
+              <td>Planner, Summary, and Admin. All farms.</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Try this</h3>
+        <ol>
+          <li>Leave the dropdown on Farm Planner and click Authenticate with Azure AD.</li>
+          <li>Confirm the header shows Alex Rivera / Farm Planner, with Planner and Summary only.</li>
+          <li>Log out, sign in as Site Manager, and confirm there is no Planner tab.</li>
+          <li>Log out, sign in as System Admin, and confirm the Admin tab appears.</li>
+          <li>Sign back in as Farm Planner for the tour below.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>4. Suggested 15-minute tour</h2>
+        <h3>A. Cascading filters</h3>
+        <p>
+          Planner → Farm = <strong>North Farm</strong>. Commodity should list only Beef, TOV, and
+          Campari.
+        </p>
+        <h3>B. Unlock the grid and paint hours</h3>
+        <p>
+          Commodity = Beef, Activity = Clipping, Number of people = <strong>5</strong>. Click the
+          first unlocked cell and drag across <strong>six</strong> slots. Hours should increase by
+          <strong>15.0</strong> (5 × 6 × 0.5). Grey locked cells are past days.
+        </p>
+        <h3>C. Historic recommendation</h3>
+        <p>
+          On the blue banner: View Logic, then Apply Recommendation. Overwrite a few cells with a
+          different headcount.
+        </p>
+        <h3>D. Notes and submit</h3>
+        <p>
+          Add a subject and comment, Save note, then Submit Schedule. Submit again on the same farm /
+          week / activity to see the required reason-for-change dialog.
+        </p>
+        <h3>E. Summary</h3>
+        <p>
+          Open Summary. Read the KPI cards. Change Group by. Click View Notes for the audit drawer.
+        </p>
+        <h3>F. Other roles</h3>
+        <p>
+          Site Manager stays on Summary. System Admin → Admin: search Azure AD for “Priya” and
+          provision her as a Farm Planner.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Planner tab</h2>
+        <ul>
+          <li><strong>Weekly</strong> — 6:00 AM–5:00 PM in 30-minute slots. Arrows change week.</li>
+          <li><strong>Monthly</strong> — click a week to expand the same grid.</li>
+          <li><strong>Yearly</strong> — click a month, then a week.</li>
+          <li>Farm is limited by your profile. Commodity is limited by the farm.</li>
+          <li>The grid stays locked until Active Activity is selected.</li>
+          <li>Hours per cell = people × 0.5. FTE = total hours ÷ 40. Drag with 0 to clear.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Summary tab</h2>
+        <ul>
+          <li>KPI cards: planned hours, FTE, unique activities.</li>
+          <li>Filters and Group by rebuild the table immediately.</li>
+          <li>View Notes opens a side drawer (author, timestamp, farm, activity, week).</li>
+          <li>Power BI panel: planned (green) vs actual (orange) — prototype visual.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. Admin tab (System Admin only)</h2>
+        <ul>
+          <li>
+            Directory search: priya, luis, emily, david, or hannah. Name auto-fills. Choose a role,
+            assign scope for planners, Link &amp; Save User.
+          </li>
+          <li>User Directory: filter, pastel Edit, pastel Delete. You cannot delete yourself.</li>
+          <li>
+            Entity cards add/delete Farms, Commodities, Activities. Farm → Crops sets which
+            commodities that farm grows.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Business rules you will notice</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rule</th>
+              <th>What happens</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Temporal lock</td>
+              <td>Ended calendar days cannot be edited.</td>
+            </tr>
+            <tr>
+              <td>Empty submit</td>
+              <td>Submit is rejected if no slots have people.</td>
+            </tr>
+            <tr>
+              <td>Audit on change</td>
+              <td>Revising a submitted plan requires a reason.</td>
+            </tr>
+            <tr>
+              <td>Farm restriction</td>
+              <td>Planners only see assigned farms.</td>
+            </tr>
+            <tr>
+              <td>Admin hierarchy</td>
+              <td>Only System Admin sees the Admin tab.</td>
+            </tr>
+            <tr>
+              <td>Recommendation override</td>
+              <td>You can still paint over recommended cells.</td>
+            </tr>
+            <tr>
+              <td>Invalid people input</td>
+              <td>Negatives, decimals, and letters are ignored.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>9. Sample data already loaded</h2>
+        <p>
+          Farms: North Farm, Maroa, Ohio, Richmond, PepperCo, Morehead. Users: Jordan Hale (Admin),
+          Alex Rivera (Planner), Sarah Johnson (Manager), Mike Peterson (Planner). Prior weeks
+          already contain hours so Summary is not empty on first open.
+        </p>
+      </section>
+
+      <section>
+        <h2>10. If something looks wrong</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>What to do</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Grid will not accept clicks</td>
+              <td>Select an Active Activity. Use a day that is not in the past.</td>
+            </tr>
+            <tr>
+              <td>Commodity list looks wrong</td>
+              <td>Change Farm first. North Farm is the clean crop-filter demo.</td>
+            </tr>
+            <tr>
+              <td>No Admin tab</td>
+              <td>Log out and sign in as System Admin.</td>
+            </tr>
+            <tr>
+              <td>Submit is greyed out</td>
+              <td>You are offline, or you are a Site Manager.</td>
+            </tr>
+            <tr>
+              <td>Numbers look like an old session</td>
+              <td>Exploration guide → Reset prototype data, then sign in again.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>11. What production will add later</h2>
+        <p>
+          Live Azure AD SSO, Azure SQL persistence, Priva / Hortimax feeds, and embedded Power BI
+          reports inside Mastronardi’s tenant. This prototype is for look, flow, and rules — not
+          go-live hosting.
+        </p>
+      </section>
+
+      <footer>
+        Labour Planner 2.0 prototype · Augusta Hitech for Mastronardi Produce Farm Operations
+      </footer>
+    </div>
+  </body>
+</html>

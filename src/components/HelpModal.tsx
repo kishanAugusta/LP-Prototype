@@ -1,0 +1,253 @@
+import { useState } from 'react'
+import { BookOpen, ExternalLink } from 'lucide-react'
+import { useStore } from '../store/AppContext'
+import { Modal } from './Modal'
+
+const sections = [
+  { id: 'start', label: '1. Start here' },
+  { id: 'personas', label: '2. Sign-in personas' },
+  { id: 'tour', label: '3. 15-minute tour' },
+  { id: 'planner', label: '4. Planner tab' },
+  { id: 'summary', label: '5. Summary tab' },
+  { id: 'admin', label: '6. Admin tab' },
+  { id: 'rules', label: '7. Business rules' },
+  { id: 'help', label: '8. If something looks wrong' },
+] as const
+
+type SectionId = (typeof sections)[number]['id']
+
+export function HelpModal() {
+  const { state, dispatch } = useStore()
+  const [section, setSection] = useState<SectionId>('start')
+
+  return (
+    <Modal
+      open={state.helpOpen}
+      title="Exploration guide — click through the prototype yourself"
+      size="xl"
+      onClose={() => dispatch({ type: 'toggleHelp', open: false })}
+    >
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <nav className="custom-scroll flex gap-1 overflow-x-auto border-b border-slate-100 p-3 md:w-52 md:flex-col md:overflow-y-auto md:border-r md:border-b-0">
+          {sections.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setSection(item.id)}
+              className={`shrink-0 rounded-[8px] px-3 py-2 text-left text-xs font-bold ${
+                section === item.id ? 'bg-green-50 text-brand' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+        <div className="custom-scroll min-h-0 flex-1 overflow-y-auto p-5 text-sm leading-relaxed text-slate-700">
+          {section === 'start' && <Start />}
+          {section === 'personas' && <Personas />}
+          {section === 'tour' && <Tour />}
+          {section === 'planner' && <Planner />}
+          {section === 'summary' && <Summary />}
+          {section === 'admin' && <Admin />}
+          {section === 'rules' && <Rules />}
+          {section === 'help' && <Trouble />}
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+            <a
+              href="/guide.html"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-[8px] bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark"
+            >
+              <BookOpen className="h-4 w-4" />
+              Open printable guide
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem('labour-planner-prototype-v1')
+                window.location.reload()
+              }}
+              className="rounded-[8px] border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+            >
+              Reset prototype data
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function Start() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">You can explore this without a presenter</h4>
+      <p>
+        This is a working website, not a Figma file. Click anything. Your changes stay in this browser
+        until you reset.
+      </p>
+      <p>
+        Production Azure AD, Azure SQL, Priva/Hortimax feeds, and live Power BI are simulated. Filters,
+        the 30-minute grid, totals, notes, roles, and admin actions are fully interactive.
+      </p>
+      <ol className="list-decimal space-y-1 pl-5">
+        <li>Sign in as <strong>Farm Planner</strong> for the first pass.</li>
+        <li>Follow the <strong>15-minute tour</strong> in this panel.</li>
+        <li>
+          Open the <strong>printable guide</strong> if you want a document to keep beside the screen or
+          save as PDF (File → Print).
+        </li>
+      </ol>
+    </div>
+  )
+}
+
+function Personas() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">Sign-in personas</h4>
+      <p>Production will use corporate SSO. Here you pick a role to see different permissions.</p>
+      <ul className="space-y-2">
+        <li>
+          <strong>Farm Planner — Alex Rivera:</strong> Planner + Summary. Farms: North Farm, Maroa,
+          Ohio. No Admin tab.
+        </li>
+        <li>
+          <strong>Site Manager — Sarah Johnson:</strong> Summary only. All farms. Cannot edit the grid.
+        </li>
+        <li>
+          <strong>System Admin — Jordan Hale:</strong> Planner, Summary, and Admin. All farms.
+        </li>
+      </ul>
+      <p className="text-xs text-slate-500">
+        Log out (top right) to switch. After you compare roles, sign back in as Farm Planner for the
+        tour.
+      </p>
+    </div>
+  )
+}
+
+function Tour() {
+  return (
+    <div className="space-y-4">
+      <h4 className="text-base font-bold text-slate-900">15-minute tour</h4>
+      <ol className="list-decimal space-y-3 pl-5">
+        <li>
+          <strong>North Farm filter.</strong> Planner → Farm = North Farm. Commodity should list only
+          Beef, TOV, and Campari.
+        </li>
+        <li>
+          <strong>Paint the grid.</strong> Commodity = Beef, Activity = Clipping. Number of people =
+          5. Click-and-drag six unlocked slots. Hours should rise by <strong>15.0</strong> (5 × 6 ×
+          0.5). Grey locked cells are past days — leave them.
+        </li>
+        <li>
+          <strong>Recommendation.</strong> View Logic → Apply Recommendation, then overwrite a few
+          cells with a different headcount.
+        </li>
+        <li>
+          <strong>Submit.</strong> Add a note, Save note, Submit Schedule (green confirmation). Submit
+          again to see the required reason-for-change dialog.
+        </li>
+        <li>
+          <strong>Summary.</strong> Open Summary, change Group by, click View Notes.
+        </li>
+        <li>
+          <strong>Other roles.</strong> Site Manager = Summary only. System Admin = Admin tab. Search
+          Azure AD for “Priya” and link her as a planner.
+        </li>
+      </ol>
+    </div>
+  )
+}
+
+function Planner() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">Planner tab</h4>
+      <p>
+        <strong>Weekly</strong> is the 6:00 AM–5:00 PM, 30-minute grid. <strong>Monthly</strong> lists
+        weeks — click one to expand. <strong>Yearly</strong> shows months — click through to a week.
+      </p>
+      <p>
+        Farm is limited by your profile. Commodity is limited by the farm. The grid stays locked until
+        <strong> Active Activity</strong> is selected. Each farm + commodity + activity pair is a
+        separate plan.
+      </p>
+      <p>
+        Hours per cell = people × 0.5. Footer totals and FTE (hours ÷ 40) update as you drag. Use 0
+        people and drag to clear cells.
+      </p>
+    </div>
+  )
+}
+
+function Summary() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">Summary tab</h4>
+      <p>
+        KPI cards show planned hours, FTE, and unique activities for the current horizon and filters.
+        Group by Farm, Commodity, Activity, Planner, or Horizon / week.
+      </p>
+      <p>
+        <strong>View Notes</strong> opens a side drawer with author, timestamp, farm, activity, and
+        week — you do not leave Summary. The Power BI panel is a prototype of planned (green) versus
+        actual (orange).
+      </p>
+    </div>
+  )
+}
+
+function Admin() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">Admin tab</h4>
+      <p>Visible only to System Admin.</p>
+      <ul className="list-disc space-y-1 pl-5">
+        <li>
+          Search Azure AD for priya, luis, emily, david, or hannah. Name auto-fills. Choose a role,
+          assign scope for planners, then Link & Save User.
+        </li>
+        <li>User Directory: filter, pastel Edit, pastel Delete. You cannot delete yourself.</li>
+        <li>
+          Entity cards: add/delete Farms, Commodities, Activities. On a farm, Crops controls which
+          commodities appear in Planner.
+        </li>
+      </ul>
+    </div>
+  )
+}
+
+function Rules() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">Rules the prototype enforces</h4>
+      <ul className="list-disc space-y-1 pl-5">
+        <li>Past calendar days cannot be edited.</li>
+        <li>An empty grid cannot be submitted.</li>
+        <li>Changing a submitted farm / week / activity requires an audit reason.</li>
+        <li>Planners only see assigned farms. Only Admin sees Admin.</li>
+        <li>Recommendations can always be overwritten.</li>
+        <li>Number of people rejects negatives, decimals, and letters.</li>
+        <li>If the browser is offline, Submit is disabled.</li>
+      </ul>
+    </div>
+  )
+}
+
+function Trouble() {
+  return (
+    <div className="space-y-3">
+      <h4 className="text-base font-bold text-slate-900">If something looks wrong</h4>
+      <ul className="list-disc space-y-1 pl-5">
+        <li>Grid will not click: pick an activity, and use a day that is not in the past.</li>
+        <li>Odd commodity list: change Farm first. Use North Farm to demo crop filtering.</li>
+        <li>No Admin tab: log out and sign in as System Admin.</li>
+        <li>Submit disabled: you are offline, or you are a Site Manager.</li>
+        <li>Stale numbers from an old session: Reset prototype data below, then sign in again.</li>
+      </ul>
+    </div>
+  )
+}
