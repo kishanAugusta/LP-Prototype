@@ -169,9 +169,9 @@ function Planner() {
       <h4 className="text-base font-bold text-slate-900">Planner tab</h4>
       <p>
         <strong>Weekly</strong> is the 6:00 AM–5:00 PM, 30-minute grid. <strong>Monthly</strong> shows
-        all 12 months in one hours grid — click a cell to expand that week. <strong>Yearly</strong> shows
-        month cards. Use <strong>MINI / FRED / HARVEST</strong> as the greenhouse house, and{' '}
-        <strong>Show maps</strong> after you pick a farm.
+        all 12 months with planned hours, rate / hr, and a consolidated budget plan. Selecting{' '}
+        <strong>MINI / FRED / HARVEST</strong> in Planning Horizon opens a row-wise selector for that
+        house (replacing the old week grid). Use <strong>Show maps</strong> after you pick a farm.
       </p>
       <p>
         Farm is limited by your profile. Commodity is limited by the farm. The grid stays locked until

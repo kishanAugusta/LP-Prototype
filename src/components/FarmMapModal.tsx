@@ -21,8 +21,7 @@ export function FarmMapModal() {
       onClose={() => dispatch({ type: 'toggleMap', open: false })}
     >
       <p className="mb-3 text-xs text-slate-600">
-        Click a house to set the planning horizon. MINI, FRED, and HARVEST are the production houses
-        at this farm.
+        Click a house to set MINI, FRED, or HARVEST in Planning Horizon.
       </p>
       <svg viewBox="0 0 360 240" className="w-full rounded-[8px] border border-line bg-mist">
         <rect x="8" y="8" width="344" height="224" rx="8" fill="#eef4ef" stroke="#d4e2d8" />

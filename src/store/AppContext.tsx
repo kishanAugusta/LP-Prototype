@@ -238,8 +238,11 @@ function pushToast(state: AppState, toast: Omit<Toast, 'id'>): AppState {
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'hydrate':
-      return { ...state, ...action.payload }
+    case 'hydrate': {
+      const payload = { ...action.payload }
+      if (payload.horizon === 'yearly') payload.horizon = 'monthly'
+      return { ...state, ...payload }
+    }
     case 'login': {
       const user = state.users.find((u) => u.id === action.userId)
       if (!user) return state
@@ -258,7 +261,11 @@ function reducer(state: AppState, action: Action): AppState {
     case 'setTab':
       return { ...state, tab: action.tab }
     case 'setHorizon':
-      return { ...state, horizon: action.horizon, expandedWeekISO: null }
+      return {
+        ...state,
+        horizon: action.horizon === 'yearly' ? 'monthly' : action.horizon,
+        expandedWeekISO: null,
+      }
     case 'shiftWeek': {
       const next = addDays(new Date(state.weekStartISO + 'T00:00:00'), action.delta * 7)
       return {

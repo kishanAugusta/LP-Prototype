@@ -13,16 +13,14 @@ import {
 import { greenhouseHouses } from '../data/mock'
 import {
   formatWeekRange,
-  monthLabel,
   SLOT_LABELS,
-  toISODate,
   weekDates,
-  weeksInMonth,
 } from '../lib/time'
 import { useStore } from '../store/AppContext'
 import { FarmMapModal } from './FarmMapModal'
+import { HouseRowsGrid } from './HouseRowsGrid'
+import { MonthlyBudgetGrid } from './MonthlyBudgetGrid'
 import { ScheduleGrid } from './ScheduleGrid'
-import { YearHoursGrid } from './YearHoursGrid'
 import type { Horizon, HouseId } from '../types'
 
 export function PlannerTab() {
@@ -59,7 +57,7 @@ export function PlannerTab() {
             <h2 className="text-sm font-bold text-ink">Planning Horizon</h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {(['weekly', 'monthly', 'yearly'] as Horizon[]).map((h) => (
+            {(['weekly', 'monthly'] as Horizon[]).map((h) => (
               <button
                 key={h}
                 type="button"
@@ -69,6 +67,19 @@ export function PlannerTab() {
                 }`}
               >
                 {h}
+              </button>
+            ))}
+            <span className="mx-1 hidden h-8 w-px bg-line sm:inline-block" aria-hidden />
+            {greenhouseHouses.map((house) => (
+              <button
+                key={house.id}
+                type="button"
+                onClick={() => dispatch({ type: 'setHouse', houseId: house.id as HouseId })}
+                className={`lp-chip px-4 py-2 ${
+                  state.houseId === house.id ? 'lp-chip-on' : 'text-slate-600 hover:bg-[#f4faf5]'
+                }`}
+              >
+                {house.name}
               </button>
             ))}
             <select
@@ -82,23 +93,6 @@ export function PlannerTab() {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="mt-4">
-            <p className="lp-label mb-2">Greenhouse house</p>
-            <div className="flex flex-wrap gap-2">
-              {greenhouseHouses.map((house) => (
-                <button
-                  key={house.id}
-                  type="button"
-                  onClick={() => dispatch({ type: 'setHouse', houseId: house.id as HouseId })}
-                  className={`lp-chip px-4 py-2 ${
-                    state.houseId === house.id ? 'lp-chip-on' : 'text-slate-600 hover:bg-[#f4faf5]'
-                  }`}
-                >
-                  {house.name}
-                </button>
-              ))}
-            </div>
           </div>
           {state.horizon === 'weekly' && (
             <div className="mt-4 flex items-center gap-3">
@@ -182,8 +176,51 @@ export function PlannerTab() {
         </div>
       </section>
 
-      {state.horizon === 'monthly' && <YearHoursGrid />}
-      {state.horizon === 'yearly' && <HorizonDrilldown />}
+      {state.horizon === 'monthly' && (
+        <>
+          <section className="lp-panel mb-4 flex flex-wrap items-center gap-3 p-4">
+            <label className="text-xs font-semibold text-slate-500">Number of people</label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={String(state.people)}
+              disabled={!canPlan}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === '') {
+                  dispatch({ type: 'setPeople', people: 0 })
+                  return
+                }
+                if (!/^\d+$/.test(v)) return
+                dispatch({ type: 'setPeople', people: Number(v) })
+              }}
+              className="lp-input w-20 px-3 py-1 text-sm disabled:bg-mist disabled:text-slate-400"
+            />
+            <label className="text-xs font-semibold text-slate-500">Rate / hr ($)</label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={String(state.ratePerHour)}
+              disabled={!canPlan}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === '') {
+                  dispatch({ type: 'setRate', ratePerHour: 0 })
+                  return
+                }
+                if (!/^\d*\.?\d{0,2}$/.test(v)) return
+                dispatch({ type: 'setRate', ratePerHour: Number(v) })
+              }}
+              className="lp-input w-20 px-3 py-1 text-sm disabled:bg-mist disabled:text-slate-400"
+            />
+            <span className="rounded-[8px] bg-navy px-3 py-1 text-xs font-bold text-white">
+              Monthly budget + {greenhouseHouses.find((h) => h.id === state.houseId)?.name} rows
+            </span>
+          </section>
+          <MonthlyBudgetGrid />
+          <HouseRowsGrid />
+        </>
+      )}
       <FarmMapModal />
 
       {showRec && recommendation && (
@@ -371,58 +408,6 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     <div className="space-y-1">
       <label className="lp-label">{label}</label>
       {children}
-    </div>
-  )
-}
-
-function HorizonDrilldown() {
-  const { state, dispatch, weekHours } = useStore()
-  if (state.horizon === 'yearly') {
-    return (
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Array.from({ length: 12 }, (_, month) => (
-          <button
-            key={month}
-            type="button"
-            onClick={() => dispatch({ type: 'setMonth', year: state.year, month })}
-            className="lp-panel p-4 text-left hover:border-brand"
-          >
-            <p className="text-sm font-bold text-ink">{monthLabel(state.year, month)}</p>
-            <p className="mt-1 text-xs text-slate-500">Click to open monthly weeks</p>
-          </button>
-        ))}
-      </div>
-    )
-  }
-
-  const weeks = weeksInMonth(state.year, state.month)
-  return (
-    <div className="lp-panel mb-6 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-ink">{monthLabel(state.year, state.month)}</h3>
-        <p className="text-xs text-slate-500">Click a week to expand the 30-minute grid</p>
-      </div>
-      <div className="space-y-2">
-        {weeks.map((ws) => {
-          const iso = toISODate(ws)
-          const open = state.expandedWeekISO === iso
-          return (
-            <button
-              key={iso}
-              type="button"
-              onClick={() => dispatch({ type: 'expandWeek', iso: open ? null : iso })}
-              className={`flex w-full items-center justify-between rounded-[8px] border px-4 py-3 text-left ${
-                open ? 'border-brand bg-green-50' : 'border-line hover:bg-mist'
-              }`}
-            >
-              <span className="text-sm font-bold text-ink">{formatWeekRange(ws)}</span>
-              <span className="text-xs font-bold text-slate-500">
-                {open ? `Expanded · ${weekHours.toFixed(1)} hrs` : 'Expand'}
-              </span>
-            </button>
-          )
-        })}
-      </div>
     </div>
   )
 }

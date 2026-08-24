@@ -31,7 +31,8 @@ A working website that shows how supervisors plan labour by farm, commodity, act
 - Notes, submit, audit reasons
 - Summary KPIs, grouping, notes drawer
 - Admin: SSO lookup, user CRUD, farms / commodities / activities
-- Greenhouse houses MINI / FRED / HARVEST, farm map, rate/hr, 12-month grid
+- Greenhouse houses MINI / FRED / HARVEST in Planning Horizon, farm map, rate/hr
+- Monthly budget plan (12 months + consolidated) and house row-wise selector
 - Summary month picker, planned-hours **pie chart**, planned-vs-actual **bar graph**
 - Admin reports, shift scheduler, guardrails, speed calibration
 
@@ -120,12 +121,12 @@ Site Manager cannot see or edit the grid. Submit is disabled for them.
 ### Planning horizon
 
 - **Weekly** (default) — 7 days, 6:00 AM–5:00 PM, **22 slots of 30 minutes**. Prev/next week arrows.
-- **Monthly** — one grid of all **12 months** (week rows × month columns, planned hours). Click a cell to expand the 30-minute week.
-- **Yearly** — 12 month cards. Click a month to open the 12-month grid.
-- Greenhouse house chips: **MINI**, **FRED**, **HARVEST**.
+- **Monthly** — all **12 months** budget grid: planned hours, rate / hr, planned budget, consolidated budget plan footer. With a house selected, a **row-wise selector** replaces the old week×month hours grid.
+- Planner has **no Yearly** horizon (yearly still available on Summary filters).
+- **MINI / FRED / HARVEST** chips live in Planning Horizon (Greenhouse house section removed).
 - Year selector: **2025, 2026, 2027**.
 
-Past dates stay locked even in the expanded monthly/yearly grid.
+Past dates stay locked in the weekly grid.
 
 ### Operational scope (cascading filters)
 
@@ -407,7 +408,8 @@ Last-week (and two-weeks-ago North/Beef/Clipping) rows are **already submitted**
 | `src/components/AdminTab.tsx` | Provision, directory, entities |
 | `src/components/AdminOps.tsx` | Reports, shifts, guardrails, calibration |
 | `src/components/FarmMapModal.tsx` | Greenhouse house map |
-| `src/components/YearHoursGrid.tsx` | 12-month hours grid |
+| `src/components/MonthlyBudgetGrid.tsx` | 12-month planned hours / rate / budget |
+| `src/components/HouseRowsGrid.tsx` | House row-wise selector (monthly) |
 | `src/components/NotesDrawer.tsx` | Audit / notes side panel |
 | `src/components/HelpModal.tsx` | In-app exploration guide + reset |
 | `src/components/Toasts.tsx` | Toasts + offline banner |

@@ -114,10 +114,10 @@ Submit a second time on the same farm / week / activity. The app will ask for a 
 ### Planning horizon
 
 - **Weekly** — default. Seven days, 6:00 AM–5:00 PM, in 30-minute slots. Use the arrows to change week.
-- **Monthly** — list of weeks in the selected month. Click a week to **expand** the same 30-minute grid.
-- **Yearly** — twelve month cards. Click a month to open its weeks.
+- **Monthly** — all 12 months in one budget grid (planned hours, rate / hr, planned budget) plus a consolidated budget plan. With **MINI / FRED / HARVEST** selected, a row-wise house grid replaces the old week×month hours grid.
+- **MINI / FRED / HARVEST** — house chips live in Planning Horizon (not a separate Greenhouse house section).
 
-Past dates in the expanded grid stay locked.
+Past dates in the weekly grid stay locked.
 
 ### Operational scope
 
