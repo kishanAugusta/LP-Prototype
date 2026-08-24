@@ -2,6 +2,7 @@ export type Role = 'admin' | 'planner' | 'manager'
 export type Horizon = 'weekly' | 'monthly' | 'yearly'
 export type Tab = 'planner' | 'summary' | 'admin'
 export type GroupBy = 'horizon' | 'planner' | 'farm' | 'commodity' | 'activity'
+export type HouseId = 'house-mini' | 'house-fred' | 'house-harvest'
 
 export interface User {
   id: string
@@ -78,4 +79,41 @@ export interface Recommendation {
   sourceLabel: string
   threshold: number
   reasons: RecReason[]
+}
+
+export interface GreenhouseHouse {
+  id: HouseId
+  name: string
+  label: string
+  rows: number
+  acres: number
+}
+
+export interface ShiftTemplate {
+  id: string
+  farmId: string
+  name: string
+  startSlot: number
+  endSlot: number
+  defaultHeadcount: number
+}
+
+export interface Guardrails {
+  maxHeadcountPerSlot: number
+  maxWeeklyHours: number
+  overtimeFteWarn: number
+  enabled: boolean
+}
+
+export interface ActivityCalibration {
+  activityId: string
+  minutesPerRow: number
+}
+
+export interface PlanningReport {
+  id: string
+  name: string
+  cadence: string
+  enabled: boolean
+  farmIds: string[]
 }

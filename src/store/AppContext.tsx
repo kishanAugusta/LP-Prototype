@@ -12,8 +12,12 @@ import {
   commodities as seedCommodities,
   demoUsers,
   farms as seedFarms,
+  seedCalibrations,
   seedCells,
+  seedGuardrails,
   seedNotes,
+  seedReports,
+  seedShifts,
   seedSubmissions,
 } from '../data/mock'
 import { buildRecommendation, fteFromHours } from '../lib/calc'
@@ -30,21 +34,26 @@ import {
 } from '../lib/time'
 import type {
   Activity,
+  ActivityCalibration,
   Cell,
   Commodity,
   Farm,
   GroupBy,
+  Guardrails,
   Horizon,
+  HouseId,
   Note,
+  PlanningReport,
   Recommendation,
   Role,
+  ShiftTemplate,
   Submission,
   Tab,
   Toast,
   User,
 } from '../types'
 
-const STORAGE_KEY = 'labour-planner-prototype-v1'
+const STORAGE_KEY = 'labour-planner-prototype-v2'
 
 interface PersistShape {
   users: User[]
@@ -55,6 +64,12 @@ interface PersistShape {
   notes: Note[]
   submissions: Record<string, Submission>
   currentUserId: string | null
+  houseId: HouseId
+  ratePerHour: number
+  shifts: ShiftTemplate[]
+  guardrails: Guardrails
+  calibrations: ActivityCalibration[]
+  reports: PlanningReport[]
 }
 
 export interface AppState extends PersistShape {
@@ -82,6 +97,7 @@ export interface AppState extends PersistShape {
   summaryCommodityId: string
   summaryActivityId: string
   summaryPlannerId: string
+  mapOpen: boolean
 }
 
 type Action =
@@ -98,8 +114,13 @@ type Action =
   | { type: 'setFarm'; farmId: string }
   | { type: 'setCommodity'; commodityId: string }
   | { type: 'setActivity'; activityId: string }
+  | { type: 'setHouse'; houseId: HouseId }
   | { type: 'setPeople'; people: number }
+  | { type: 'setRate'; ratePerHour: number }
+  | { type: 'toggleMap'; open?: boolean }
+  | { type: 'shiftMonth'; delta: number }
   | { type: 'fillCells'; dates: string[]; slots: number[] }
+  | { type: 'applyShift'; shiftId: string }
   | { type: 'applyRecommendation' }
   | { type: 'dismissRec' }
   | { type: 'setNoteDraft'; subject?: string; body?: string }
@@ -125,6 +146,13 @@ type Action =
   | { type: 'provisionUser'; user: User }
   | { type: 'updateUser'; user: User }
   | { type: 'deleteUser'; id: string }
+  | { type: 'setGuardrails'; guardrails: Partial<Guardrails> }
+  | { type: 'setCalibration'; activityId: string; minutesPerRow: number }
+  | { type: 'addShift'; shift: Omit<ShiftTemplate, 'id'> }
+  | { type: 'updateShift'; shift: ShiftTemplate }
+  | { type: 'removeShift'; id: string }
+  | { type: 'toggleReport'; id: string }
+  | { type: 'setReportFarms'; id: string; farmIds: string[] }
 
 function todayParts(d = new Date()) {
   const weekStart = startOfWeek(d)
@@ -185,6 +213,13 @@ function initialState(): AppState {
     summaryCommodityId: 'all',
     summaryActivityId: 'all',
     summaryPlannerId: 'all',
+    houseId: 'house-mini',
+    ratePerHour: 18,
+    mapOpen: false,
+    shifts: seedShifts(),
+    guardrails: seedGuardrails,
+    calibrations: seedCalibrations,
+    reports: seedReports(seedFarms.map((f) => f.id)),
   }
   const persisted = loadPersisted()
   return persisted ? { ...base, ...persisted } : base
@@ -253,7 +288,17 @@ function reducer(state: AppState, action: Action): AppState {
         expandedWeekISO: null,
       }
     case 'setYear':
-      return { ...state, year: action.year, horizon: 'yearly', expandedWeekISO: null }
+      return { ...state, year: action.year, expandedWeekISO: null }
+    case 'shiftMonth': {
+      const d = new Date(state.year, state.month + action.delta, 1)
+      return { ...state, year: d.getFullYear(), month: d.getMonth(), expandedWeekISO: null }
+    }
+    case 'setHouse':
+      return { ...state, houseId: action.houseId, recDismissed: false }
+    case 'setRate':
+      return { ...state, ratePerHour: action.ratePerHour }
+    case 'toggleMap':
+      return { ...state, mapOpen: action.open ?? !state.mapOpen }
     case 'expandWeek': {
       if (!action.iso) return { ...state, expandedWeekISO: null }
       const d = new Date(action.iso + 'T00:00:00')
@@ -285,6 +330,12 @@ function reducer(state: AppState, action: Action): AppState {
     case 'fillCells': {
       const user = currentUser(state)
       if (!user || user.role === 'manager' || !state.activityId) return state
+      let people = state.people
+      let warned = false
+      if (state.guardrails.enabled && people > state.guardrails.maxHeadcountPerSlot) {
+        people = state.guardrails.maxHeadcountPerSlot
+        warned = true
+      }
       const cells = { ...state.cells }
       for (const date of action.dates) {
         for (const slot of action.slots) {
@@ -295,17 +346,59 @@ function reducer(state: AppState, action: Action): AppState {
             date,
             slot,
           })
-          if (state.people === 0) delete cells[key]
+          if (people === 0) delete cells[key]
           else {
             cells[key] = {
-              headcount: state.people,
+              headcount: people,
               plannerId: user.id,
               plannerName: user.name,
             }
           }
         }
       }
-      return { ...state, cells }
+      const next = { ...state, cells }
+      return warned
+        ? pushToast(next, {
+            tone: 'warning',
+            title: 'Guardrail applied',
+            message: `Max ${state.guardrails.maxHeadcountPerSlot} people per slot. Extra headcount was capped.`,
+          })
+        : next
+    }
+    case 'applyShift': {
+      const user = currentUser(state)
+      const shift = state.shifts.find((s) => s.id === action.shiftId)
+      if (!user || !shift || !state.activityId) return state
+      const dates = weekDates(new Date(state.weekStartISO + 'T00:00:00')).map(toISODate)
+      const todayISO = toISODate(new Date())
+      const slots = Array.from({ length: shift.endSlot - shift.startSlot }, (_, i) => shift.startSlot + i)
+      const cells = { ...state.cells }
+      for (const date of dates) {
+        if (date < todayISO) continue
+        for (const slot of slots) {
+          cells[
+            cellKey({
+              farmId: state.farmId,
+              commodityId: state.commodityId,
+              activityId: state.activityId,
+              date,
+              slot,
+            })
+          ] = {
+            headcount: shift.defaultHeadcount,
+            plannerId: user.id,
+            plannerName: user.name,
+          }
+        }
+      }
+      return pushToast(
+        { ...state, cells },
+        {
+          tone: 'success',
+          title: `${shift.name} shift applied`,
+          message: `${shift.defaultHeadcount} people filled unlocked slots from the shift template.`,
+        },
+      )
     }
     case 'applyRecommendation': {
       const user = currentUser(state)
@@ -401,6 +494,29 @@ function reducer(state: AppState, action: Action): AppState {
           message: 'A completely empty grid cannot be submitted. Allocate at least one slot.',
         })
       }
+      const plannedHours = weekDates(new Date(state.weekStartISO + 'T00:00:00'))
+        .map(toISODate)
+        .reduce((sum, date) => {
+          let h = 0
+          for (let slot = 0; slot < SLOT_COUNT; slot++) {
+            const key = cellKey({
+              farmId: state.farmId,
+              commodityId: state.commodityId,
+              activityId: state.activityId,
+              date,
+              slot,
+            })
+            h += hoursFromHeadcount(state.cells[key]?.headcount ?? 0)
+          }
+          return sum + h
+        }, 0)
+      if (state.guardrails.enabled && plannedHours > state.guardrails.maxWeeklyHours) {
+        return pushToast(state, {
+          tone: 'warning',
+          title: 'Weekly hours guardrail',
+          message: `${plannedHours.toFixed(1)} hrs exceeds the ${state.guardrails.maxWeeklyHours} hr weekly cap. Reduce allocation before submit.`,
+        })
+      }
       const subKey = submissionKey(
         state.farmId,
         weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00')),
@@ -478,7 +594,12 @@ function reducer(state: AppState, action: Action): AppState {
       const activity: Activity = { id: `act-${crypto.randomUUID().slice(0, 8)}`, name }
       const farms = state.farms.map((f) => ({ ...f, activityIds: [...f.activityIds, activity.id] }))
       return pushToast(
-        { ...state, activities: [...state.activities, activity], farms },
+        {
+          ...state,
+          activities: [...state.activities, activity],
+          farms,
+          calibrations: [...state.calibrations, { activityId: activity.id, minutesPerRow: 10 }],
+        },
         { tone: 'success', title: 'Activity added', message: `${name} was added to all farm profiles.` },
       )
     }
@@ -532,6 +653,43 @@ function reducer(state: AppState, action: Action): AppState {
         })
       }
       return { ...state, users: state.users.filter((u) => u.id !== action.id) }
+    case 'setGuardrails':
+      return { ...state, guardrails: { ...state.guardrails, ...action.guardrails } }
+    case 'setCalibration': {
+      const exists = state.calibrations.some((c) => c.activityId === action.activityId)
+      return {
+        ...state,
+        calibrations: exists
+          ? state.calibrations.map((c) =>
+              c.activityId === action.activityId ? { ...c, minutesPerRow: action.minutesPerRow } : c,
+            )
+          : [...state.calibrations, { activityId: action.activityId, minutesPerRow: action.minutesPerRow }],
+      }
+    }
+    case 'addShift': {
+      const shift: ShiftTemplate = { ...action.shift, id: `shift-${crypto.randomUUID().slice(0, 8)}` }
+      return pushToast(
+        { ...state, shifts: [...state.shifts, shift] },
+        { tone: 'success', title: 'Shift added', message: `${shift.name} is available on the planner.` },
+      )
+    }
+    case 'updateShift':
+      return {
+        ...state,
+        shifts: state.shifts.map((s) => (s.id === action.shift.id ? action.shift : s)),
+      }
+    case 'removeShift':
+      return { ...state, shifts: state.shifts.filter((s) => s.id !== action.id) }
+    case 'toggleReport':
+      return {
+        ...state,
+        reports: state.reports.map((r) => (r.id === action.id ? { ...r, enabled: !r.enabled } : r)),
+      }
+    case 'setReportFarms':
+      return {
+        ...state,
+        reports: state.reports.map((r) => (r.id === action.id ? { ...r, farmIds: action.farmIds } : r)),
+      }
     default:
       return state
   }
@@ -661,6 +819,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       notes: state.notes,
       submissions: state.submissions,
       currentUserId: state.currentUserId,
+      houseId: state.houseId,
+      ratePerHour: state.ratePerHour,
+      shifts: state.shifts,
+      guardrails: state.guardrails,
+      calibrations: state.calibrations,
+      reports: state.reports,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
   }, [
@@ -672,6 +836,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     state.notes,
     state.submissions,
     state.currentUserId,
+    state.houseId,
+    state.ratePerHour,
+    state.shifts,
+    state.guardrails,
+    state.calibrations,
+    state.reports,
   ])
 
   useEffect(() => {
@@ -688,8 +858,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const user = useMemo(() => currentUser(state), [state])
   const visibleFarms = useMemo(() => allowedFarms(user, state.farms), [user, state.farms])
   const farm = state.farms.find((f) => f.id === state.farmId)
-  const farmCommodities = state.commodities.filter((c) => farm?.commodityIds.includes(c.id))
-  const farmActivities = state.activities.filter((a) => farm?.activityIds.includes(a.id))
+  const farmCommodities = state.commodities.filter((c) => {
+    if (!farm?.commodityIds.includes(c.id)) return false
+    if (user?.role === 'planner' && user.commodityIds.length > 0 && !user.commodityIds.includes(c.id)) {
+      return false
+    }
+    return true
+  })
+  const farmActivities = state.activities.filter((a) => {
+    if (!farm?.activityIds.includes(a.id)) return false
+    if (user?.role === 'planner' && user.activityIds.length > 0 && !user.activityIds.includes(a.id)) {
+      return false
+    }
+    return true
+  })
   const recommendation = useMemo(() => {
     if (!state.farmId || !state.commodityId || !state.activityId) return null
     return buildRecommendation(state.farmId, state.commodityId, state.activityId)

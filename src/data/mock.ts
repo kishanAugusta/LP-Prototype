@@ -1,4 +1,17 @@
-import type { Activity, Cell, Commodity, DirectoryPerson, Farm, Note, User } from '../types'
+import type {
+  Activity,
+  ActivityCalibration,
+  Cell,
+  Commodity,
+  DirectoryPerson,
+  Farm,
+  GreenhouseHouse,
+  Guardrails,
+  Note,
+  PlanningReport,
+  ShiftTemplate,
+  User,
+} from '../types'
 import {
   addDays,
   cellKey,
@@ -145,6 +158,41 @@ export const directory: DirectoryPerson[] = [
     email: 'hannah.brooks@mastronardi.com',
     department: 'Site Management',
   },
+]
+
+export const greenhouseHouses: GreenhouseHouse[] = [
+  { id: 'house-mini', name: 'MINI', label: 'Mini house', rows: 42, acres: 4.2 },
+  { id: 'house-fred', name: 'FRED', label: 'Fred house', rows: 38, acres: 3.8 },
+  { id: 'house-harvest', name: 'HARVEST', label: 'Harvest house', rows: 56, acres: 6.1 },
+]
+
+export const seedGuardrails: Guardrails = {
+  maxHeadcountPerSlot: 12,
+  maxWeeklyHours: 400,
+  overtimeFteWarn: 1.25,
+  enabled: true,
+}
+
+export const seedCalibrations: ActivityCalibration[] = [
+  { activityId: 'act-clipping', minutesPerRow: 8 },
+  { activityId: 'act-deleafing', minutesPerRow: 12 },
+  { activityId: 'act-lowering', minutesPerRow: 10 },
+  { activityId: 'act-pruning', minutesPerRow: 9 },
+  { activityId: 'act-scouting', minutesPerRow: 6 },
+  { activityId: 'act-twisting', minutesPerRow: 7 },
+]
+
+export const seedShifts = (): ShiftTemplate[] => [
+  { id: 'shift-am', farmId: 'all', name: 'Morning', startSlot: 0, endSlot: 8, defaultHeadcount: 6 },
+  { id: 'shift-mid', farmId: 'all', name: 'Midday', startSlot: 8, endSlot: 16, defaultHeadcount: 4 },
+  { id: 'shift-pm', farmId: 'all', name: 'Afternoon', startSlot: 16, endSlot: 22, defaultHeadcount: 3 },
+]
+
+export const seedReports = (farmIds: string[]): PlanningReport[] => [
+  { id: 'rep-weekly', name: 'Weekly planned hours', cadence: 'Weekly', enabled: true, farmIds },
+  { id: 'rep-fte', name: 'FTE by farm', cadence: 'Weekly', enabled: true, farmIds },
+  { id: 'rep-pva', name: 'Planned vs actual', cadence: 'Weekly', enabled: true, farmIds },
+  { id: 'rep-harvest', name: 'Harvest labour forecast', cadence: 'Monthly', enabled: false, farmIds },
 ]
 
 export const loginOptions = [

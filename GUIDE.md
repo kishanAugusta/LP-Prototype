@@ -1,4 +1,4 @@
-# Labour Planner 2.0 — Self-Exploration Guide
+# Labour Planner — Self-Exploration Guide
 
 Use this guide to click through the prototype on your own. You do not need a presenter, Figma, or Azure access. Every button in the app is live; this document tells you what to try and what you should see.
 
@@ -10,7 +10,7 @@ Use this guide to click through the prototype on your own. You do not need a pre
 
 ## 1. What you are looking at
 
-Labour Planner 2.0 is the proposed workforce allocation application for Mastronardi Produce Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time slot. Managers review totals and notes. Admins manage users and master data.
+Labour Planner is the proposed workforce allocation application for Mastronardi Produce Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time slot. Managers review totals and notes. Admins manage users and master data.
 
 This prototype shows how that website will look and behave. The following are **simulated** so you can explore without production systems:
 
@@ -166,7 +166,8 @@ Use this as a manager or after you have submitted plans.
 | **Group by** | Rebuilds the table instantly. |
 | **KPI cards** | Hours, FTE (hours ÷ 40), unique activities. |
 | **View Notes** | Slide-out audit history. Does not leave the Summary screen. |
-| **Power BI panel** | Prototype of planned (green) vs actual (orange) from Priva / Hortimax. |
+| **Pie chart** | Planned hours allocation — share by the current Group by. |
+| **Bar graph** | Power BI planned (green) vs actual (orange) from Priva / Hortimax. |
 
 Farm Planners only see their assigned farms here. Site Managers and Admins see all farms.
 
@@ -251,4 +252,4 @@ Still to connect in the real build: Azure AD SSO, Azure SQL persistence, live Pr
 
 ---
 
-*Labour Planner 2.0 prototype · Augusta Hitech for Mastronardi Produce Farm Operations*
+*Labour Planner · Augusta Hitech for Mastronardi Produce Farm Operations*

@@ -1,4 +1,4 @@
-# Labour Planner 2.0 — Client Prototype
+# Labour Planner — Client Prototype
 
 Interactive, shareable prototype of Mastronardi Produce’s Labour Planner. Every control works: SSO personas, Planner grid, Summary analytics, and Admin. Data lives in the browser (no Azure required).
 

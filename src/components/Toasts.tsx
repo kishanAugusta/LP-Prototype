@@ -32,7 +32,7 @@ export function Toasts() {
     return () => window.clearTimeout(t)
   }, [state.toasts, dispatch])
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-[80] flex w-full max-w-sm flex-col gap-2">
+    <div className="pointer-events-none fixed right-4 bottom-4 z-[80] flex w-full max-w-sm flex-col gap-2">
       {state.toasts.map((toast) => {
         const Icon = icon[toast.tone]
         return (
@@ -42,7 +42,7 @@ export function Toasts() {
           >
             <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${iconClass[toast.tone]}`} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-slate-800">{toast.title}</p>
+              <p className="text-sm font-bold text-ink">{toast.title}</p>
               <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{toast.message}</p>
             </div>
             <button

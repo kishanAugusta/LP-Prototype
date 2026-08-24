@@ -28,14 +28,14 @@ export function HelpModal() {
       onClose={() => dispatch({ type: 'toggleHelp', open: false })}
     >
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <nav className="custom-scroll flex gap-1 overflow-x-auto border-b border-slate-100 p-3 md:w-52 md:flex-col md:overflow-y-auto md:border-r md:border-b-0">
+        <nav className="custom-scroll flex gap-1 overflow-x-auto border-b border-line bg-mist p-3 md:w-52 md:flex-col md:overflow-y-auto md:border-r md:border-b-0">
           {sections.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setSection(item.id)}
               className={`shrink-0 rounded-[8px] px-3 py-2 text-left text-xs font-bold ${
-                section === item.id ? 'bg-green-50 text-brand' : 'text-slate-600 hover:bg-slate-50'
+                section === item.id ? 'bg-navy text-white' : 'text-slate-600 hover:bg-white'
               }`}
             >
               {item.label}
@@ -51,12 +51,12 @@ export function HelpModal() {
           {section === 'admin' && <Admin />}
           {section === 'rules' && <Rules />}
           {section === 'help' && <Trouble />}
-          <div className="mt-6 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+          <div className="mt-6 flex flex-wrap gap-2 border-t border-line pt-4">
             <a
               href="/guide.html"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-[8px] bg-brand px-4 py-2 text-xs font-bold text-white hover:bg-brand-dark"
+              className="lp-btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs"
             >
               <BookOpen className="h-4 w-4" />
               Open printable guide
@@ -66,9 +66,10 @@ export function HelpModal() {
               type="button"
               onClick={() => {
                 localStorage.removeItem('labour-planner-prototype-v1')
+                localStorage.removeItem('labour-planner-prototype-v2')
                 window.location.reload()
               }}
-              className="rounded-[8px] border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              className="lp-btn-ghost px-4 py-2 text-xs"
             >
               Reset prototype data
             </button>
@@ -82,7 +83,7 @@ export function HelpModal() {
 function Start() {
   return (
     <div className="space-y-3">
-      <h4 className="text-base font-bold text-slate-900">You can explore this without a presenter</h4>
+      <h4 className="text-base font-bold text-ink">You can explore Labour Planner without a presenter</h4>
       <p>
         This is a working website, not a Figma file. Click anything. Your changes stay in this browser
         until you reset.
@@ -167,13 +168,15 @@ function Planner() {
     <div className="space-y-3">
       <h4 className="text-base font-bold text-slate-900">Planner tab</h4>
       <p>
-        <strong>Weekly</strong> is the 6:00 AM–5:00 PM, 30-minute grid. <strong>Monthly</strong> lists
-        weeks — click one to expand. <strong>Yearly</strong> shows months — click through to a week.
+        <strong>Weekly</strong> is the 6:00 AM–5:00 PM, 30-minute grid. <strong>Monthly</strong> shows
+        all 12 months in one hours grid — click a cell to expand that week. <strong>Yearly</strong> shows
+        month cards. Use <strong>MINI / FRED / HARVEST</strong> as the greenhouse house, and{' '}
+        <strong>Show maps</strong> after you pick a farm.
       </p>
       <p>
         Farm is limited by your profile. Commodity is limited by the farm. The grid stays locked until
-        <strong> Active Activity</strong> is selected. Each farm + commodity + activity pair is a
-        separate plan.
+        <strong> Active Activity</strong> is selected. Rate / hr calculates labour cost from planned
+        hours.
       </p>
       <p>
         Hours per cell = people × 0.5. Footer totals and FTE (hours ÷ 40) update as you drag. Use 0
@@ -189,12 +192,14 @@ function Summary() {
       <h4 className="text-base font-bold text-slate-900">Summary tab</h4>
       <p>
         KPI cards show planned hours, FTE, and unique activities for the current horizon and filters.
-        Group by Farm, Commodity, Activity, Planner, or Horizon / week.
+        Group by Farm, Commodity, Activity, Planner, or Horizon / week — the control is highlighted
+        in green. Monthly view includes a month and year picker. A planned-hours **pie chart** and a
+        planned-vs-actual **bar graph** sit below the table.
       </p>
       <p>
         <strong>View Notes</strong> opens a side drawer with author, timestamp, farm, activity, and
-        week — you do not leave Summary. The Power BI panel is a prototype of planned (green) versus
-        actual (orange).
+        week — you do not leave Summary. The pie shows share by Group by. The bar graph is a
+        prototype of planned (green) versus actual (orange).
       </p>
     </div>
   )
@@ -214,6 +219,13 @@ function Admin() {
         <li>
           Entity cards: add/delete Farms, Commodities, Activities. On a farm, Crops controls which
           commodities appear in Planner.
+        </li>
+        <li>
+          Assign farm / commodity / activity is always visible on Provision User and on Edit.
+        </li>
+        <li>
+          Also: planning report provisioning, daily shift scheduler, operational guardrails, and
+          activity speed calibration (minutes per row).
         </li>
       </ul>
     </div>

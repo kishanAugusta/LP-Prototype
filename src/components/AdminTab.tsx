@@ -3,14 +3,20 @@ import { Search, Shield, Trash2, UserPlus, Warehouse } from 'lucide-react'
 import { directory } from '../data/mock'
 import { roleLabel, useStore } from '../store/AppContext'
 import type { Role, User } from '../types'
+import { AdminOps } from './AdminOps'
 import { Modal } from './Modal'
 
 export function AdminTab() {
   return (
     <div className="space-y-6">
+      <div>
+        <p className="lp-kicker">Admin</p>
+        <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-ink">Users and master data</h2>
+      </div>
       <ProvisionCard />
       <UserDirectory />
       <EntityCards />
+      <AdminOps />
     </div>
   )
 }
@@ -54,10 +60,9 @@ function ProvisionCard() {
       name: person.name,
       email: person.email,
       role,
-      farmIds: role === 'admin' || role === 'manager' ? state.farms.map((f) => f.id) : farmIds,
-      commodityIds:
-        role === 'admin' || role === 'manager' ? state.commodities.map((c) => c.id) : commodityIds,
-      activityIds: role === 'admin' ? state.activities.map((a) => a.id) : activityIds,
+      farmIds,
+      commodityIds,
+      activityIds: activityIds,
     }
     dispatch({ type: 'provisionUser', user })
     setQuery('')
@@ -69,16 +74,16 @@ function ProvisionCard() {
   }
 
   return (
-    <section className="rounded-[8px] border-2 border-green-100 bg-white p-6 shadow-sm">
+    <section className="lp-panel p-6">
       <div className="mb-6 flex items-center gap-2">
-        <div className="rounded bg-green-100 p-1.5 text-brand">
+        <div className="rounded-[8px] bg-navy p-1.5 text-white">
           <UserPlus className="h-4 w-4" />
         </div>
-        <h3 className="text-lg font-bold text-slate-800">Provision User via SSO</h3>
+        <h3 className="text-lg font-bold text-ink">Provision User via SSO</h3>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="relative">
-          <label className="text-[11px] font-bold uppercase text-slate-500">Directory email lookup</label>
+          <label className="lp-label">Directory email lookup</label>
           <div className="relative mt-1">
             <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
@@ -88,7 +93,7 @@ function ProvisionCard() {
                 setSelectedId('')
               }}
               placeholder="Search Azure AD…"
-              className="w-full rounded-[8px] border border-slate-300 py-2 pr-4 pl-8 text-sm outline-none focus:ring-1 focus:ring-brand"
+              className="lp-input w-full py-2 pr-4 pl-8 text-sm"
             />
           </div>
           {matches.length > 0 && !selectedId && (
@@ -101,9 +106,9 @@ function ProvisionCard() {
                       setSelectedId(p.id)
                       setQuery(p.email)
                     }}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-green-50"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-mist"
                   >
-                    <span className="font-bold text-slate-800">{p.name}</span>
+                    <span className="font-bold text-ink">{p.name}</span>
                     <span className="block text-xs text-slate-500">
                       {p.email} · {p.department}
                     </span>
@@ -114,20 +119,28 @@ function ProvisionCard() {
           )}
         </div>
         <div>
-          <label className="text-[11px] font-bold uppercase text-slate-500">Full name (auto-fill)</label>
+          <label className="lp-label">Full name (auto-fill)</label>
           <input
             disabled
             value={person?.name ?? ''}
             placeholder="Pending search…"
-            className="mt-1 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600"
+            className="lp-input mt-1 w-full bg-mist px-4 py-2 text-sm text-slate-600"
           />
         </div>
         <div>
-          <label className="text-[11px] font-bold uppercase text-slate-500">Role selection</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            className="mt-1 w-full rounded-[8px] border border-slate-300 px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-brand"
+          <label className="lp-label">Role selection</label>
+            <select
+              value={role}
+              onChange={(e) => {
+                const next = e.target.value as Role
+                setRole(next)
+                if (next === 'admin' || next === 'manager') {
+                  setFarmIds(state.farms.map((f) => f.id))
+                  setCommodityIds(state.commodities.map((c) => c.id))
+                  setActivityIds(state.activities.map((a) => a.id))
+                }
+              }}
+            className="lp-select mt-1 w-full px-4 py-2 text-sm"
           >
             <option value="">Select role…</option>
             <option value="planner">Supervisor / Farm Planner</option>
@@ -136,8 +149,7 @@ function ProvisionCard() {
           </select>
         </div>
       </div>
-      {role === 'planner' && (
-        <div className="mb-6 grid grid-cols-1 gap-8 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-8 rounded-[8px] border border-line bg-mist p-4 md:grid-cols-3">
           <CheckList
             title="Assign farm(s)"
             items={state.farms}
@@ -157,8 +169,7 @@ function ProvisionCard() {
             onToggle={(id) => toggle(activityIds, id, setActivityIds)}
           />
         </div>
-      )}
-      <div className="flex justify-center gap-4 border-t border-slate-100 pt-6">
+      <div className="flex justify-center gap-4 border-t border-line pt-6">
         <button
           type="button"
           onClick={() => {
@@ -166,14 +177,14 @@ function ProvisionCard() {
             setSelectedId('')
             setRole('')
           }}
-          className="rounded-[8px] border border-slate-300 bg-white px-8 py-2 font-bold text-slate-700 shadow-sm hover:bg-slate-50"
+          className="lp-btn-ghost px-8 py-2"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={save}
-          className="rounded-[8px] bg-brand px-8 py-2 font-bold text-white shadow hover:bg-brand-dark"
+          className="lp-btn-primary px-8 py-2"
         >
           Link & Save User
         </button>
@@ -195,7 +206,7 @@ function CheckList({
 }) {
   return (
     <div>
-      <label className="mb-2 block w-full border-b border-slate-300 pb-1 text-xs font-bold text-slate-700">
+      <label className="mb-2 block w-full border-b border-line pb-1 text-xs font-bold text-ink">
         {title}
       </label>
       <div className="custom-scroll h-32 space-y-2 overflow-y-auto">
@@ -226,21 +237,21 @@ function UserDirectory() {
   })
 
   return (
-    <section className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 p-4">
+    <section id="admin-users" className="lp-panel overflow-hidden">
+      <div className="flex items-center justify-between border-b border-line bg-mist p-4">
         <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-slate-400" />
-          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-800">User Directory</h3>
+          <Shield className="h-4 w-4 text-teal" />
+          <h3 className="text-sm font-bold tracking-wide text-ink uppercase">User Directory</h3>
         </div>
         <input
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter users…"
-          className="w-64 rounded-full border border-slate-300 px-4 py-1 text-xs outline-none focus:ring-1 focus:ring-brand"
+          className="lp-input w-64 px-4 py-1 text-xs"
         />
       </div>
       <table className="w-full text-left text-xs">
-        <thead className="border-b border-slate-200 text-slate-400 uppercase tracking-wider">
+        <thead className="border-b border-line text-slate-500 uppercase tracking-wider">
           <tr>
             <th className="p-4">Name & email</th>
             <th className="p-4">Role</th>
@@ -250,13 +261,13 @@ function UserDirectory() {
         </thead>
         <tbody className="divide-y divide-slate-100">
           {rows.map((u) => (
-            <tr key={u.id} className="hover:bg-slate-50">
+            <tr key={u.id} className="hover:bg-mist">
               <td className="p-4">
-                <p className="font-bold text-slate-800">{u.name}</p>
+                <p className="font-bold text-ink">{u.name}</p>
                 <p className="text-slate-500">{u.email}</p>
               </td>
               <td className="p-4">
-                <span className="rounded bg-slate-200 px-2 py-0.5 font-bold text-slate-700">
+                <span className="rounded-[8px] bg-navy/10 px-2 py-0.5 font-bold text-navy">
                   {roleLabel[u.role]}
                 </span>
               </td>
@@ -318,14 +329,14 @@ function UserDirectory() {
             <select
               value={editing.role}
               onChange={(e) => setEditing({ ...editing, role: e.target.value as Role })}
-              className="w-full rounded-[8px] border border-slate-300 px-3 py-2 text-sm"
+              className="lp-select w-full px-3 py-2 text-sm"
             >
               <option value="planner">Farm Planner</option>
               <option value="manager">Site Manager</option>
               <option value="admin">System Admin</option>
             </select>
             <CheckList
-              title="Farms"
+              title="Assign farm(s)"
               items={state.farms}
               selected={editing.farmIds}
               onToggle={(id) =>
@@ -337,11 +348,37 @@ function UserDirectory() {
                 })
               }
             />
+            <CheckList
+              title="Assign commodity"
+              items={state.commodities}
+              selected={editing.commodityIds}
+              onToggle={(id) =>
+                setEditing({
+                  ...editing,
+                  commodityIds: editing.commodityIds.includes(id)
+                    ? editing.commodityIds.filter((x) => x !== id)
+                    : [...editing.commodityIds, id],
+                })
+              }
+            />
+            <CheckList
+              title="Assign activity"
+              items={state.activities}
+              selected={editing.activityIds}
+              onToggle={(id) =>
+                setEditing({
+                  ...editing,
+                  activityIds: editing.activityIds.includes(id)
+                    ? editing.activityIds.filter((x) => x !== id)
+                    : [...editing.activityIds, id],
+                })
+              }
+            />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="rounded-[8px] border px-4 py-2 text-sm font-bold"
+                className="lp-btn-ghost px-4 py-2 text-sm"
               >
                 Cancel
               </button>
@@ -355,7 +392,7 @@ function UserDirectory() {
                   })
                   setEditing(null)
                 }}
-                className="rounded-[8px] bg-brand px-4 py-2 text-sm font-bold text-white"
+                className="lp-btn-primary px-4 py-2 text-sm"
               >
                 Save
               </button>
@@ -367,7 +404,7 @@ function UserDirectory() {
       <Modal open={Boolean(confirmId)} title="Remove user?" onClose={() => setConfirmId(null)}>
         <p className="mb-4 text-sm text-slate-600">This removes the user from Labour Planner entitlements.</p>
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={() => setConfirmId(null)} className="rounded-[8px] border px-4 py-2 text-sm font-bold">
+          <button type="button" onClick={() => setConfirmId(null)} className="lp-btn-ghost px-4 py-2 text-sm">
             Cancel
           </button>
           <button
@@ -394,10 +431,10 @@ function EntityCards() {
   const [cropFarm, setCropFarm] = useState<string | null>(null)
 
   return (
-    <section className="rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="lp-panel p-6">
       <div className="mb-4 flex items-center gap-2">
-        <Warehouse className="h-4 w-4 text-slate-400" />
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-800">Global Entity Management</h3>
+        <Warehouse className="h-4 w-4 text-teal" />
+        <h3 className="text-sm font-bold tracking-wide text-ink uppercase">Global Entity Management</h3>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <EntityColumn
@@ -474,7 +511,7 @@ function EntityCards() {
             <button
               type="button"
               onClick={() => setCropFarm(null)}
-              className="mt-3 rounded-[8px] bg-brand px-4 py-2 text-sm font-bold text-white"
+              className="lp-btn-primary mt-3 px-4 py-2 text-sm"
             >
               Done
             </button>
@@ -503,8 +540,8 @@ function EntityColumn({
   extra?: (item: { id: string; name: string }) => ReactNode
 }) {
   return (
-    <div className="flex flex-col rounded-[8px] border border-slate-200">
-      <div className="border-b border-slate-100 bg-slate-50 p-3 text-xs font-bold uppercase text-slate-600">
+    <div className="flex flex-col rounded-[8px] border border-line">
+      <div className="border-b border-line bg-mist p-3 text-xs font-bold uppercase text-navy">
         {title}
       </div>
       <div className="flex gap-2 p-3">
@@ -515,16 +552,16 @@ function EntityColumn({
             if (e.key === 'Enter') onAdd()
           }}
           placeholder={`Add ${title.toLowerCase().slice(0, -1)}…`}
-          className="flex-1 rounded-[8px] border border-slate-300 px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-brand"
+          className="lp-input flex-1 px-3 py-1.5 text-sm"
         />
-        <button type="button" onClick={onAdd} className="rounded-[8px] bg-brand px-3 py-1.5 text-white hover:bg-brand-dark">
+        <button type="button" onClick={onAdd} className="lp-btn-primary px-3 py-1.5">
           +
         </button>
       </div>
       <div className="custom-scroll max-h-48 space-y-2 overflow-y-auto p-3 pt-0">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center justify-between rounded border border-slate-100 px-2 py-1.5 text-sm">
-            <span className="font-medium text-slate-700">{item.name}</span>
+          <div key={item.id} className="flex items-center justify-between rounded-[8px] border border-line px-2 py-1.5 text-sm">
+            <span className="font-medium text-ink">{item.name}</span>
             <div className="flex items-center gap-2">
               {extra?.(item)}
               <button

@@ -51,21 +51,21 @@ export function ScheduleGrid({ dates }: { dates: Date[] }) {
   const grand = dayHours.reduce((a, b) => a + b, 0)
 
   return (
-    <div className="overflow-x-auto overflow-y-auto custom-scroll max-h-[620px] rounded-[8px] border border-slate-200">
+    <div className="overflow-x-auto overflow-y-auto custom-scroll max-h-[620px] rounded-[8px] border border-line">
       <table className="w-full min-w-[860px] border-collapse grid-select-none text-xs">
-        <thead className="sticky top-0 z-20 bg-slate-50 text-slate-600 shadow-sm">
+        <thead className="sticky top-0 z-20 bg-navy text-white shadow-sm">
           <tr>
-            <th className="w-28 border-b border-r border-slate-200 p-2 text-left font-bold uppercase tracking-wider">
+            <th className="w-28 border-b border-r border-white/10 p-2 text-left font-bold uppercase tracking-wider">
               Time
             </th>
             {dates.map((d) => {
               const locked = isPastDay(toISODate(d))
               return (
-                <th key={toISODate(d)} className="border-b border-r border-slate-200 p-2 text-center font-bold">
+                <th key={toISODate(d)} className="border-b border-r border-white/10 p-2 text-center font-bold">
                   <div className="uppercase tracking-wide">
                     {d.toLocaleDateString('en-US', { weekday: 'short' })}
                   </div>
-                  <div className="mt-0.5 flex items-center justify-center gap-1 font-semibold text-slate-500">
+                  <div className="mt-0.5 flex items-center justify-center gap-1 font-semibold text-white/70">
                     {locked && <Lock className="h-3 w-3" />}
                     {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </div>
@@ -77,7 +77,7 @@ export function ScheduleGrid({ dates }: { dates: Date[] }) {
         <tbody>
           {SLOT_LABELS.map((label, slot) => (
             <tr key={label}>
-              <td className="sticky left-0 z-10 border-b border-r border-slate-200 bg-white px-2 py-1 font-semibold text-slate-500">
+              <td className="sticky left-0 z-10 border-b border-r border-line bg-mist px-2 py-1 font-semibold text-navy">
                 {label}
               </td>
               {dates.map((d) => {
@@ -85,7 +85,7 @@ export function ScheduleGrid({ dates }: { dates: Date[] }) {
                 const locked = isPastDay(date) || !unlocked
                 const headcount = getCell(date, slot)?.headcount ?? 0
                 return (
-                  <td key={date + slot} className="border-b border-r border-slate-100 p-0">
+                  <td key={date + slot} className="border-b border-r border-line p-0">
                     <button
                       type="button"
                       onPointerDown={(e) => {
@@ -106,18 +106,18 @@ export function ScheduleGrid({ dates }: { dates: Date[] }) {
             </tr>
           ))}
         </tbody>
-        <tfoot className="sticky bottom-0 z-20 bg-slate-100 shadow-md">
+        <tfoot className="sticky bottom-0 z-20 bg-mist shadow-md">
           <tr>
-            <td className="border-r border-slate-200 p-2 font-bold uppercase text-slate-600">Hours</td>
+            <td className="border-r border-line p-2 font-bold uppercase text-navy">Hours</td>
             {dayHours.map((hours, i) => (
-              <td key={i} className="p-2 text-center font-extrabold text-slate-800">
+              <td key={i} className="p-2 text-center font-extrabold text-ink">
                 {hours.toFixed(1)}
               </td>
             ))}
           </tr>
           <tr>
-            <td className="bg-brand p-2 font-bold uppercase text-white">Total</td>
-            <td className="bg-brand p-2 text-center font-extrabold text-white" colSpan={dates.length}>
+            <td className="bg-navy p-2 font-bold uppercase text-white">Total</td>
+            <td className="bg-navy p-2 text-center font-extrabold text-white" colSpan={dates.length}>
               {grand.toFixed(1)} hrs
             </td>
           </tr>

@@ -8,61 +8,82 @@ export function LoginScreen() {
   const [userId, setUserId] = useState(loginOptions[1].userId)
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-slate-100 p-4">
-      <div className="w-full max-w-md rounded-[8px] border border-slate-200 bg-white p-10 text-center shadow-2xl">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-green-50 shadow-sm">
-          <Leaf className="h-10 w-10 text-brand" />
+    <div className="grid min-h-svh lg:grid-cols-2">
+      <div className="relative hidden flex-col justify-between bg-navy p-12 text-white lg:flex">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-brand">
+            <Leaf className="h-5 w-5" />
+          </span>
+          <span className="text-sm font-semibold tracking-[0.2em] uppercase text-white/70">
+            Mastronardi Produce
+          </span>
         </div>
-        <h1 className="text-3xl font-bold text-slate-800">Mastronardi Produce</h1>
-        <p className="mt-2 text-sm font-medium uppercase tracking-wide text-slate-500">
-          Labour Planner 2.0 · Prototype
-        </p>
+        <div>
+          <p className="text-sm font-semibold tracking-[0.18em] text-brand uppercase">Farm operations</p>
+          <h1 className="mt-3 max-w-md text-5xl font-extrabold leading-[1.1] tracking-tight">Labour Planner</h1>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
+            Allocate crews by farm, greenhouse house, commodity, and 30-minute slot. One schedule for
+            supervisors, managers, and admins.
+          </p>
+        </div>
+        <p className="text-xs text-white/40">Workforce allocation · greenhouse labour</p>
+      </div>
 
-        <div className="mt-8 space-y-5 text-left">
-          <div className="rounded-[8px] border border-blue-200 bg-blue-50 p-4 text-xs leading-relaxed text-blue-800">
-            <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-            <strong>Azure AD SSO simulation:</strong> pick a persona to see role-based farms, tabs, and
-            permissions. Production will use corporate single sign-on.
+      <div className="flex items-center justify-center bg-mist p-6">
+        <div className="w-full max-w-md">
+          <div className="mb-8 lg:hidden">
+            <p className="text-xs font-bold tracking-[0.2em] text-teal uppercase">Mastronardi Produce</p>
+            <h1 className="mt-1 text-3xl font-extrabold text-ink">Labour Planner</h1>
           </div>
+          <div className="lp-panel p-8">
+            <h2 className="text-xl font-bold text-ink">Sign in</h2>
+            <p className="mt-1 text-sm text-slate-500">Choose a role to explore the planner.</p>
 
-          <div>
-            <label className="mb-2 block text-xs font-bold uppercase text-slate-500">
-              Simulate login as
-            </label>
-            <select
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="w-full rounded-[8px] border-2 border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none focus:border-brand"
-            >
-              {loginOptions.map((opt) => (
-                <option key={opt.userId} value={opt.userId}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="mt-6 rounded-[8px] border border-teal/20 bg-teal/5 p-4 text-xs leading-relaxed text-teal">
+              <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
+              <strong>Azure AD SSO simulation:</strong> pick a persona to see role-based farms, tabs, and
+              permissions. Production will use corporate single sign-on.
+            </div>
 
-          <button
-            type="button"
-            onClick={() => dispatch({ type: 'login', userId })}
-            className="mt-2 flex w-full items-center justify-center gap-3 rounded-[8px] bg-navy py-3.5 font-bold text-white shadow-md transition-colors hover:bg-[#242485]"
-          >
-            <MicrosoftMark />
-            Authenticate with Azure AD
-          </button>
+            <div className="mt-6">
+              <label className="mb-2 block text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+                Simulate login as
+              </label>
+              <select
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="lp-select w-full px-4 py-3 text-sm font-semibold text-ink"
+              >
+                {loginOptions.map((opt) => (
+                  <option key={opt.userId} value={opt.userId}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="flex flex-col gap-2 pt-1 text-center">
             <button
               type="button"
-              onClick={() => dispatch({ type: 'toggleHelp', open: true })}
-              className="inline-flex items-center justify-center gap-2 text-sm font-bold text-brand hover:underline"
+              onClick={() => dispatch({ type: 'login', userId })}
+              className="mt-5 flex w-full items-center justify-center gap-3 rounded-[8px] bg-navy py-3.5 font-bold text-white transition-colors hover:bg-[#1c4a3a]"
             >
-              <BookOpen className="h-4 w-4" />
-              Open the exploration guide
+              <MicrosoftMark />
+              Authenticate with Azure AD
             </button>
-            <a href="/guide.html" className="text-xs font-semibold text-slate-500 hover:text-slate-700">
-              Or open the printable document
-            </a>
+
+            <div className="mt-5 flex flex-col gap-2 text-center">
+              <button
+                type="button"
+                onClick={() => dispatch({ type: 'toggleHelp', open: true })}
+                className="inline-flex items-center justify-center gap-2 text-sm font-bold text-brand hover:underline"
+              >
+                <BookOpen className="h-4 w-4" />
+                Open the exploration guide
+              </button>
+              <a href="/guide.html" className="text-xs font-semibold text-slate-500 hover:text-ink">
+                Or open the printable document
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -3,28 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Labour Planner 2.0 — Self-Exploration Guide</title>
+    <title>Labour Planner — Self-Exploration Guide</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
         --brand: #00a63f;
-        --ink: #0f172a;
-        --muted: #475569;
-        --line: #e2e8f0;
-        --paper: #f8fafc;
+        --ink: #14261f;
+        --navy: #16382d;
+        --muted: #5c7464;
+        --line: #d4e2d8;
+        --paper: #eef4ef;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        font-family: Inter, system-ui, sans-serif;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
         color: var(--ink);
         background: var(--paper);
         line-height: 1.55;
@@ -156,7 +157,7 @@
     <div class="wrap">
       <header class="hero">
         <p class="eyebrow">Mastronardi Produce · Farm Operations</p>
-        <h1>Labour Planner 2.0 — Self-Exploration Guide</h1>
+        <h1>Labour Planner — Self-Exploration Guide</h1>
         <p class="lede">
           Use this document to click through the prototype on your own. You do not need a presenter,
           Figma, or Azure access. Every button in the app is live.
@@ -170,7 +171,7 @@
       <section>
         <h2>1. What you are looking at</h2>
         <p>
-          Labour Planner 2.0 is the proposed workforce allocation application for Mastronardi Produce
+          Labour Planner is the proposed workforce allocation application for Mastronardi Produce
           Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time
           slot. Managers review totals and notes. Admins manage users and master data.
         </p>
@@ -289,7 +290,8 @@
           <li>KPI cards: planned hours, FTE, unique activities.</li>
           <li>Filters and Group by rebuild the table immediately.</li>
           <li>View Notes opens a side drawer (author, timestamp, farm, activity, week).</li>
-          <li>Power BI panel: planned (green) vs actual (orange) — prototype visual.</li>
+          <li>Pie chart: planned hours allocation by Group by.</li>
+          <li>Bar graph: Power BI planned (green) vs actual (orange) — prototype visual.</li>
         </ul>
       </section>
 
@@ -403,7 +405,7 @@
       </section>
 
       <footer>
-        Labour Planner 2.0 prototype · Augusta Hitech for Mastronardi Produce Farm Operations
+        Labour Planner · Augusta Hitech for Mastronardi Produce Farm Operations
       </footer>
     </div>
   </body>

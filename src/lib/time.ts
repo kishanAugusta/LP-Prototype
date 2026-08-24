@@ -116,3 +116,29 @@ export function submissionKey(
 export function hoursFromHeadcount(headcount: number): number {
   return headcount * 0.5
 }
+
+export function hoursForWeek(args: {
+  cells: Record<string, { headcount: number }>
+  farmId: string
+  commodityId: string
+  activityIds: string[]
+  weekStart: Date
+}): number {
+  let hours = 0
+  for (const day of weekDates(args.weekStart)) {
+    const date = toISODate(day)
+    for (const activityId of args.activityIds) {
+      for (let slot = 0; slot < SLOT_COUNT; slot++) {
+        const key = cellKey({
+          farmId: args.farmId,
+          commodityId: args.commodityId,
+          activityId,
+          date,
+          slot,
+        })
+        hours += hoursFromHeadcount(args.cells[key]?.headcount ?? 0)
+      }
+    }
+  }
+  return hours
+}
