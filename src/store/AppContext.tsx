@@ -14,6 +14,7 @@ import {
   farms as seedFarms,
   seedCalibrations,
   seedCells,
+  seedFarmDaySchedules,
   seedGuardrails,
   seedNotes,
   seedReports,
@@ -38,11 +39,16 @@ import type {
   Cell,
   Commodity,
   Farm,
+  FarmDaySchedule,
   GroupBy,
+  GuardrailCondition,
+  GuardrailMetric,
   Guardrails,
   Horizon,
   HouseId,
+  LogicGate,
   Note,
+  PlanType,
   PlanningReport,
   Recommendation,
   Role,
@@ -53,7 +59,7 @@ import type {
   User,
 } from '../types'
 
-const STORAGE_KEY = 'labour-planner-prototype-v2'
+const STORAGE_KEY = 'labour-planner-prototype-v6'
 
 interface PersistShape {
   users: User[]
@@ -67,9 +73,19 @@ interface PersistShape {
   houseId: HouseId
   ratePerHour: number
   shifts: ShiftTemplate[]
+  farmDaySchedules: FarmDaySchedule[]
   guardrails: Guardrails
   calibrations: ActivityCalibration[]
   reports: PlanningReport[]
+  planType: PlanType
+  /** farm|weekKey|day|rowId → selected for harvest */
+  harvestPicks: Record<string, boolean>
+  /** plan|farm|weekKey|taskId → { rows, crew } */
+  ganttMeta: Record<string, { rows: number; crew: number }>
+  /** plan|farm|weekKey|taskId|date → intensity 1|2|3 */
+  ganttDays: Record<string, 1 | 2 | 3>
+  /** farm|year|activityId|month → planned hours */
+  monthlyPlan: Record<string, number>
 }
 
 export interface AppState extends PersistShape {
@@ -98,6 +114,7 @@ export interface AppState extends PersistShape {
   summaryActivityId: string
   summaryPlannerId: string
   mapOpen: boolean
+  harvestDay: number
 }
 
 type Action =
@@ -106,6 +123,7 @@ type Action =
   | { type: 'logout' }
   | { type: 'setTab'; tab: Tab }
   | { type: 'setHorizon'; horizon: Horizon }
+  | { type: 'setPlanType'; planType: PlanType }
   | { type: 'shiftWeek'; delta: number }
   | { type: 'setWeek'; iso: string }
   | { type: 'setMonth'; year: number; month: number }
@@ -119,7 +137,14 @@ type Action =
   | { type: 'setRate'; ratePerHour: number }
   | { type: 'toggleMap'; open?: boolean }
   | { type: 'shiftMonth'; delta: number }
-  | { type: 'fillCells'; dates: string[]; slots: number[] }
+  | { type: 'setHarvestDay'; day: number }
+  | { type: 'toggleHarvestRow'; rowId: string }
+  | { type: 'clearHarvestDay' }
+  | { type: 'clearHarvestWeek' }
+  | { type: 'setGanttMeta'; key: string; rows: number; crew: number }
+  | { type: 'cycleGanttDay'; key: string }
+  | { type: 'setMonthlyPlan'; key: string; hours: number }
+  | { type: 'fillCells'; dates: string[]; slots: number[]; activityId?: string }
   | { type: 'applyShift'; shiftId: string }
   | { type: 'applyRecommendation' }
   | { type: 'dismissRec' }
@@ -139,6 +164,9 @@ type Action =
   | { type: 'addFarm'; name: string }
   | { type: 'addCommodity'; name: string }
   | { type: 'addActivity'; name: string }
+  | { type: 'renameFarm'; id: string; name: string }
+  | { type: 'renameCommodity'; id: string; name: string }
+  | { type: 'renameActivity'; id: string; name: string }
   | { type: 'removeFarm'; id: string }
   | { type: 'removeCommodity'; id: string }
   | { type: 'removeActivity'; id: string }
@@ -147,12 +175,19 @@ type Action =
   | { type: 'updateUser'; user: User }
   | { type: 'deleteUser'; id: string }
   | { type: 'setGuardrails'; guardrails: Partial<Guardrails> }
+  | { type: 'addGuardrailCondition'; condition: Omit<GuardrailCondition, 'id'> }
+  | { type: 'updateGuardrailCondition'; condition: GuardrailCondition }
+  | { type: 'removeGuardrailCondition'; id: string }
+  | { type: 'addLogicGate'; gate: Omit<LogicGate, 'id' | 'code'> }
+  | { type: 'updateLogicGate'; gate: LogicGate }
+  | { type: 'removeLogicGate'; id: string }
+  | { type: 'setFarmDaySchedule'; schedule: FarmDaySchedule }
   | { type: 'setCalibration'; activityId: string; minutesPerRow: number }
   | { type: 'addShift'; shift: Omit<ShiftTemplate, 'id'> }
   | { type: 'updateShift'; shift: ShiftTemplate }
   | { type: 'removeShift'; id: string }
   | { type: 'toggleReport'; id: string }
-  | { type: 'setReportFarms'; id: string; farmIds: string[] }
+  | { type: 'setReportScope'; id: string; key: 'farmIds' | 'commodityIds' | 'activityIds'; ids: string[] }
 
 function todayParts(d = new Date()) {
   const weekStart = startOfWeek(d)
@@ -175,6 +210,33 @@ function firstScope(user: User | null, farms: Farm[]) {
   const commodityId = farm?.commodityIds[0] ?? ''
   const activityId = farm?.activityIds[0] ?? ''
   return { farmId: farm?.id ?? '', commodityId, activityId }
+}
+
+/** Lowest enabled threshold for a metric that matches current farm/activity scope. */
+function guardrailThreshold(state: AppState, metric: GuardrailMetric): number | null {
+  if (!state.guardrails.enabled) return null
+  const matches = state.guardrails.conditions.filter((c) => {
+    if (!c.enabled || c.metric !== metric) return false
+    if (c.farmId !== 'all' && c.farmId !== state.farmId) return false
+    if (c.activityId !== 'all' && c.activityId !== state.activityId) return false
+    return true
+  })
+  if (matches.length === 0) return null
+  return Math.min(...matches.map((c) => c.threshold))
+}
+
+function canEditPlan(state: AppState): boolean {
+  const user = currentUser(state)
+  return Boolean(user && user.role !== 'manager')
+}
+
+function harvestDayPrefix(state: AppState): string {
+  const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
+  return `${state.farmId}|${weekKey}|${state.harvestDay}|`
+}
+
+function harvestKey(state: AppState, rowId: string): string {
+  return `${harvestDayPrefix(state)}${rowId}`
 }
 
 function initialState(): AppState {
@@ -208,7 +270,7 @@ function initialState(): AppState {
     noteBody: '',
     toasts: [],
     online: typeof navigator === 'undefined' ? true : navigator.onLine,
-    groupBy: 'farm',
+    groupBy: 'detailed',
     summaryFarmId: 'all',
     summaryCommodityId: 'all',
     summaryActivityId: 'all',
@@ -217,12 +279,34 @@ function initialState(): AppState {
     ratePerHour: 18,
     mapOpen: false,
     shifts: seedShifts(),
+    farmDaySchedules: seedFarmDaySchedules(seedFarms.map((f) => f.id)),
     guardrails: seedGuardrails,
     calibrations: seedCalibrations,
-    reports: seedReports(seedFarms.map((f) => f.id)),
+    reports: seedReports(
+      seedFarms.map((f) => f.id),
+      seedCommodities.map((c) => c.id),
+      seedActivities.map((a) => a.id),
+    ),
+    planType: 'labour-weekly',
+    harvestPicks: {},
+    ganttMeta: {},
+    ganttDays: {},
+    monthlyPlan: {},
+    harvestDay: 0,
   }
   const persisted = loadPersisted()
-  return persisted ? { ...base, ...persisted } : base
+  if (!persisted) return base
+  return {
+    ...base,
+    ...persisted,
+    farmDaySchedules: persisted.farmDaySchedules ?? base.farmDaySchedules,
+    guardrails: {
+      ...base.guardrails,
+      ...persisted.guardrails,
+      conditions: persisted.guardrails?.conditions ?? base.guardrails.conditions,
+      logicGates: persisted.guardrails?.logicGates ?? base.guardrails.logicGates,
+    },
+  }
 }
 
 function currentUser(state: AppState): User | null {
@@ -238,11 +322,8 @@ function pushToast(state: AppState, toast: Omit<Toast, 'id'>): AppState {
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'hydrate': {
-      const payload = { ...action.payload }
-      if (payload.horizon === 'yearly') payload.horizon = 'monthly'
-      return { ...state, ...payload }
-    }
+    case 'hydrate':
+      return { ...state, ...action.payload }
     case 'login': {
       const user = state.users.find((u) => u.id === action.userId)
       if (!user) return state
@@ -261,10 +342,73 @@ function reducer(state: AppState, action: Action): AppState {
     case 'setTab':
       return { ...state, tab: action.tab }
     case 'setHorizon':
+      return { ...state, horizon: action.horizon, expandedWeekISO: null }
+    case 'setPlanType': {
+      const planType = action.planType
+      const horizon: Horizon = planType === 'labour-monthly' ? 'monthly' : 'weekly'
+      const activityId =
+        planType === 'labour-weekly' || planType === 'labour-monthly' ? state.activityId : state.activityId
       return {
         ...state,
-        horizon: action.horizon === 'yearly' ? 'monthly' : action.horizon,
+        planType,
+        horizon,
         expandedWeekISO: null,
+        activityId: planType === 'harvest-weekly' ? '' : activityId,
+        recDismissed: false,
+      }
+    }
+    case 'setHarvestDay':
+      return { ...state, harvestDay: Math.max(0, Math.min(5, action.day)) }
+    case 'toggleHarvestRow': {
+      if (!canEditPlan(state)) return state
+      const key = harvestKey(state, action.rowId)
+      const harvestPicks = { ...state.harvestPicks }
+      if (harvestPicks[key]) delete harvestPicks[key]
+      else harvestPicks[key] = true
+      return { ...state, harvestPicks }
+    }
+    case 'clearHarvestDay': {
+      if (!canEditPlan(state)) return state
+      const prefix = harvestDayPrefix(state)
+      const harvestPicks = { ...state.harvestPicks }
+      for (const key of Object.keys(harvestPicks)) {
+        if (key.startsWith(prefix)) delete harvestPicks[key]
+      }
+      return { ...state, harvestPicks }
+    }
+    case 'clearHarvestWeek': {
+      if (!canEditPlan(state)) return state
+      const prefix = `${state.farmId}|${weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))}|`
+      const harvestPicks = { ...state.harvestPicks }
+      for (const key of Object.keys(harvestPicks)) {
+        if (key.startsWith(prefix)) delete harvestPicks[key]
+      }
+      return { ...state, harvestPicks }
+    }
+    case 'setGanttMeta':
+      if (!canEditPlan(state)) return state
+      return {
+        ...state,
+        ganttMeta: {
+          ...state.ganttMeta,
+          [action.key]: { rows: action.rows, crew: action.crew },
+        },
+      }
+    case 'cycleGanttDay': {
+      if (!canEditPlan(state)) return state
+      const cur = state.ganttDays[action.key]
+      const ganttDays = { ...state.ganttDays }
+      if (!cur) ganttDays[action.key] = 1
+      else if (cur === 1) ganttDays[action.key] = 2
+      else if (cur === 2) ganttDays[action.key] = 3
+      else delete ganttDays[action.key]
+      return { ...state, ganttDays }
+    }
+    case 'setMonthlyPlan':
+      if (!canEditPlan(state)) return state
+      return {
+        ...state,
+        monthlyPlan: { ...state.monthlyPlan, [action.key]: action.hours },
       }
     case 'shiftWeek': {
       const next = addDays(new Date(state.weekStartISO + 'T00:00:00'), action.delta * 7)
@@ -294,8 +438,17 @@ function reducer(state: AppState, action: Action): AppState {
         horizon: 'monthly',
         expandedWeekISO: null,
       }
-    case 'setYear':
-      return { ...state, year: action.year, expandedWeekISO: null }
+    case 'setYear': {
+      const current = new Date(state.weekStartISO + 'T00:00:00')
+      const weekStart = startOfWeek(new Date(action.year, current.getMonth(), current.getDate()))
+      return {
+        ...state,
+        year: action.year,
+        weekStartISO: toISODate(weekStart),
+        month: weekStart.getMonth(),
+        expandedWeekISO: null,
+      }
+    }
     case 'shiftMonth': {
       const d = new Date(state.year, state.month + action.delta, 1)
       return { ...state, year: d.getFullYear(), month: d.getMonth(), expandedWeekISO: null }
@@ -336,11 +489,14 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, people: action.people }
     case 'fillCells': {
       const user = currentUser(state)
-      if (!user || user.role === 'manager' || !state.activityId) return state
+      const activityId = action.activityId ?? state.activityId
+      if (!user || user.role === 'manager' || !activityId) return state
       let people = state.people
       let warned = false
-      if (state.guardrails.enabled && people > state.guardrails.maxHeadcountPerSlot) {
-        people = state.guardrails.maxHeadcountPerSlot
+      const scoped = { ...state, activityId }
+      const maxSlot = guardrailThreshold(scoped, 'maxHeadcountPerSlot')
+      if (maxSlot != null && people > maxSlot) {
+        people = maxSlot
         warned = true
       }
       const cells = { ...state.cells }
@@ -348,8 +504,9 @@ function reducer(state: AppState, action: Action): AppState {
         for (const slot of action.slots) {
           const key = cellKey({
             farmId: state.farmId,
+            houseId: state.houseId,
             commodityId: state.commodityId,
-            activityId: state.activityId,
+            activityId,
             date,
             slot,
           })
@@ -363,12 +520,12 @@ function reducer(state: AppState, action: Action): AppState {
           }
         }
       }
-      const next = { ...state, cells }
+      const next = { ...state, cells, activityId }
       return warned
         ? pushToast(next, {
             tone: 'warning',
             title: 'Guardrail applied',
-            message: `Max ${state.guardrails.maxHeadcountPerSlot} people per slot. Extra headcount was capped.`,
+            message: `Max ${maxSlot} people per slot. Extra headcount was capped.`,
           })
         : next
     }
@@ -386,6 +543,7 @@ function reducer(state: AppState, action: Action): AppState {
           cells[
             cellKey({
               farmId: state.farmId,
+              houseId: state.houseId,
               commodityId: state.commodityId,
               activityId: state.activityId,
               date,
@@ -419,6 +577,7 @@ function reducer(state: AppState, action: Action): AppState {
         for (let slot = 0; slot < SLOT_COUNT; slot++) {
           const key = cellKey({
             farmId: state.farmId,
+            houseId: state.houseId,
             commodityId: state.commodityId,
             activityId: state.activityId,
             date,
@@ -480,55 +639,70 @@ function reducer(state: AppState, action: Action): AppState {
           message: 'Submit is disabled until Azure connectivity is restored.',
         })
       }
-      const dates = weekDates(new Date(state.weekStartISO + 'T00:00:00')).map(toISODate)
+      const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
       let filled = 0
-      for (const date of dates) {
-        for (let slot = 0; slot < SLOT_COUNT; slot++) {
-          const key = cellKey({
-            farmId: state.farmId,
-            commodityId: state.commodityId,
-            activityId: state.activityId,
-            date,
-            slot,
-          })
-          if (state.cells[key]?.headcount) filled += 1
+      let plannedHours = 0
+
+      if (state.planType === 'labour-weekly') {
+        const dates = weekDates(new Date(state.weekStartISO + 'T00:00:00')).map(toISODate)
+        for (const date of dates) {
+          for (const activity of state.activities) {
+            for (let slot = 0; slot < SLOT_COUNT; slot++) {
+              const key = cellKey({
+                farmId: state.farmId,
+                houseId: state.houseId,
+                commodityId: state.commodityId,
+                activityId: activity.id,
+                date,
+                slot,
+              })
+              const head = state.cells[key]?.headcount ?? 0
+              if (head) filled += 1
+              plannedHours += hoursFromHeadcount(head)
+            }
+          }
         }
+      } else if (state.planType === 'labour-monthly') {
+        filled = Object.keys(state.monthlyPlan).filter((k) => k.startsWith(`${state.farmId}|${state.year}|`))
+          .length
+        plannedHours = Object.entries(state.monthlyPlan)
+          .filter(([k]) => k.startsWith(`${state.farmId}|${state.year}|`))
+          .reduce((s, [, h]) => s + h, 0)
+        if (filled === 0) filled = 1 // defaults count as planned
+      } else if (state.planType === 'harvest-weekly') {
+        const prefix = `${state.farmId}|${weekKey}|`
+        filled = Object.keys(state.harvestPicks).filter((k) => k.startsWith(prefix)).length
+      } else {
+        const prefix = `${state.planType}|${state.farmId}|${state.weekStartISO}|`
+        filled = Object.keys(state.ganttDays).filter((k) => k.startsWith(prefix)).length
       }
-      if (!state.activityId || filled === 0) {
+
+      if (filled === 0) {
         return pushToast(state, {
           tone: 'error',
-          title: 'Empty grid',
-          message: 'A completely empty grid cannot be submitted. Allocate at least one slot.',
+          title: 'Empty plan',
+          message: 'Add at least one allocation before submitting this plan type.',
         })
       }
-      const plannedHours = weekDates(new Date(state.weekStartISO + 'T00:00:00'))
-        .map(toISODate)
-        .reduce((sum, date) => {
-          let h = 0
-          for (let slot = 0; slot < SLOT_COUNT; slot++) {
-            const key = cellKey({
-              farmId: state.farmId,
-              commodityId: state.commodityId,
-              activityId: state.activityId,
-              date,
-              slot,
-            })
-            h += hoursFromHeadcount(state.cells[key]?.headcount ?? 0)
-          }
-          return sum + h
-        }, 0)
-      if (state.guardrails.enabled && plannedHours > state.guardrails.maxWeeklyHours) {
+      const maxWeekly = guardrailThreshold(state, 'maxWeeklyHours')
+      if (
+        maxWeekly != null &&
+        plannedHours > maxWeekly &&
+        (state.planType === 'labour-weekly' || state.planType === 'labour-monthly')
+      ) {
         return pushToast(state, {
           tone: 'warning',
           title: 'Weekly hours guardrail',
-          message: `${plannedHours.toFixed(1)} hrs exceeds the ${state.guardrails.maxWeeklyHours} hr weekly cap. Reduce allocation before submit.`,
+          message: `${plannedHours.toFixed(1)} hrs exceeds the ${maxWeekly} hr weekly cap. Reduce allocation before submit.`,
         })
       }
+      const activityId = state.activityId || state.planType
       const subKey = submissionKey(
         state.farmId,
-        weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00')),
-        state.commodityId,
-        state.activityId,
+        state.houseId,
+        weekKey,
+        state.commodityId || 'all',
+        activityId,
       )
       if (state.submissions[subKey]) {
         return { ...state, reasonOpen: true, pendingReason: '' }
@@ -547,6 +721,7 @@ function reducer(state: AppState, action: Action): AppState {
       }
       const subKey = submissionKey(
         state.farmId,
+        state.houseId,
         weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00')),
         state.commodityId,
         state.activityId,
@@ -582,7 +757,21 @@ function reducer(state: AppState, action: Action): AppState {
         u.role === 'admin' || u.role === 'manager' ? { ...u, farmIds: [...u.farmIds, farm.id] } : u,
       )
       return pushToast(
-        { ...state, farms: [...state.farms, farm], users },
+        {
+          ...state,
+          farms: [...state.farms, farm],
+          users,
+          farmDaySchedules: [
+            ...state.farmDaySchedules,
+            ...Array.from({ length: 7 }, (_, day) => ({
+              farmId: farm.id,
+              day,
+              work: day >= 1 && day <= 6,
+              start: '06:00',
+              end: '16:00',
+            })),
+          ],
+        },
         { tone: 'success', title: 'Farm added', message: `${name} is now available in filters.` },
       )
     }
@@ -609,6 +798,30 @@ function reducer(state: AppState, action: Action): AppState {
         },
         { tone: 'success', title: 'Activity added', message: `${name} was added to all farm profiles.` },
       )
+    }
+    case 'renameFarm': {
+      const name = action.name.trim()
+      if (!name) return state
+      return {
+        ...state,
+        farms: state.farms.map((f) => (f.id === action.id ? { ...f, name } : f)),
+      }
+    }
+    case 'renameCommodity': {
+      const name = action.name.trim()
+      if (!name) return state
+      return {
+        ...state,
+        commodities: state.commodities.map((c) => (c.id === action.id ? { ...c, name } : c)),
+      }
+    }
+    case 'renameActivity': {
+      const name = action.name.trim()
+      if (!name) return state
+      return {
+        ...state,
+        activities: state.activities.map((a) => (a.id === action.id ? { ...a, name } : a)),
+      }
     }
     case 'removeFarm':
       return {
@@ -662,6 +875,90 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, users: state.users.filter((u) => u.id !== action.id) }
     case 'setGuardrails':
       return { ...state, guardrails: { ...state.guardrails, ...action.guardrails } }
+    case 'addGuardrailCondition': {
+      const condition: GuardrailCondition = {
+        ...action.condition,
+        id: `gr-${crypto.randomUUID().slice(0, 8)}`,
+      }
+      return pushToast(
+        {
+          ...state,
+          guardrails: {
+            ...state.guardrails,
+            conditions: [...state.guardrails.conditions, condition],
+          },
+        },
+        { tone: 'success', title: 'Guardrail added', message: `${condition.name} is now active when Enabled.` },
+      )
+    }
+    case 'updateGuardrailCondition':
+      return {
+        ...state,
+        guardrails: {
+          ...state.guardrails,
+          conditions: state.guardrails.conditions.map((c) =>
+            c.id === action.condition.id ? action.condition : c,
+          ),
+        },
+      }
+    case 'removeGuardrailCondition':
+      return {
+        ...state,
+        guardrails: {
+          ...state.guardrails,
+          conditions: state.guardrails.conditions.filter((c) => c.id !== action.id),
+        },
+      }
+    case 'addLogicGate': {
+      const n = state.guardrails.logicGates.length + 1
+      const gate: LogicGate = {
+        ...action.gate,
+        id: `lg-${crypto.randomUUID().slice(0, 8)}`,
+        code: `R-${String(n).padStart(2, '0')}`,
+      }
+      return pushToast(
+        {
+          ...state,
+          guardrails: {
+            ...state.guardrails,
+            logicGates: [...state.guardrails.logicGates, gate],
+          },
+        },
+        { tone: 'success', title: 'Rule added', message: `${gate.code} is now an active logic gate.` },
+      )
+    }
+    case 'updateLogicGate':
+      return {
+        ...state,
+        guardrails: {
+          ...state.guardrails,
+          logicGates: state.guardrails.logicGates.map((g) =>
+            g.id === action.gate.id ? action.gate : g,
+          ),
+        },
+      }
+    case 'removeLogicGate':
+      return {
+        ...state,
+        guardrails: {
+          ...state.guardrails,
+          logicGates: state.guardrails.logicGates.filter((g) => g.id !== action.id),
+        },
+      }
+    case 'setFarmDaySchedule': {
+      const key = (s: FarmDaySchedule) => `${s.farmId}|${s.day}`
+      const exists = state.farmDaySchedules.some(
+        (s) => key(s) === key(action.schedule),
+      )
+      return {
+        ...state,
+        farmDaySchedules: exists
+          ? state.farmDaySchedules.map((s) =>
+              key(s) === key(action.schedule) ? action.schedule : s,
+            )
+          : [...state.farmDaySchedules, action.schedule],
+      }
+    }
     case 'setCalibration': {
       const exists = state.calibrations.some((c) => c.activityId === action.activityId)
       return {
@@ -692,10 +989,12 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         reports: state.reports.map((r) => (r.id === action.id ? { ...r, enabled: !r.enabled } : r)),
       }
-    case 'setReportFarms':
+    case 'setReportScope':
       return {
         ...state,
-        reports: state.reports.map((r) => (r.id === action.id ? { ...r, farmIds: action.farmIds } : r)),
+        reports: state.reports.map((r) =>
+          r.id === action.id ? { ...r, [action.key]: action.ids } : r,
+        ),
       }
     default:
       return state
@@ -756,6 +1055,7 @@ function confirmSubmit(state: AppState, subKey: string, reason?: string): AppSta
       for (let slot = 0; slot < SLOT_COUNT; slot++) {
         const key = cellKey({
           farmId: state.farmId,
+          houseId: state.houseId,
           commodityId: state.commodityId,
           activityId: state.activityId,
           date,
@@ -829,9 +1129,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       houseId: state.houseId,
       ratePerHour: state.ratePerHour,
       shifts: state.shifts,
+      farmDaySchedules: state.farmDaySchedules,
       guardrails: state.guardrails,
       calibrations: state.calibrations,
       reports: state.reports,
+      planType: state.planType,
+      harvestPicks: state.harvestPicks,
+      ganttMeta: state.ganttMeta,
+      ganttDays: state.ganttDays,
+      monthlyPlan: state.monthlyPlan,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
   }, [
@@ -846,9 +1152,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     state.houseId,
     state.ratePerHour,
     state.shifts,
+    state.farmDaySchedules,
     state.guardrails,
     state.calibrations,
     state.reports,
+    state.planType,
+    state.harvestPicks,
+    state.ganttMeta,
+    state.ganttDays,
+    state.monthlyPlan,
   ])
 
   useEffect(() => {
@@ -891,6 +1203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       for (let slot = 0; slot < SLOT_COUNT; slot++) {
         const key = cellKey({
           farmId: state.farmId,
+          houseId: state.houseId,
           commodityId: state.commodityId,
           activityId: state.activityId,
           date,
@@ -900,7 +1213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     return hours
-  }, [state.activityId, state.weekStartISO, state.farmId, state.commodityId, state.cells])
+  }, [state.activityId, state.weekStartISO, state.farmId, state.houseId, state.commodityId, state.cells])
 
   const value = useMemo<StoreValue>(
     () => ({

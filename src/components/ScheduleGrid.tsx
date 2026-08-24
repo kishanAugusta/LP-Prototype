@@ -32,7 +32,9 @@ export function ScheduleGrid({ dates }: { dates: Date[] }) {
   const unlocked = canPlan && Boolean(state.activityId)
 
   function getCell(date: string, slot: number): Cell | undefined {
-    return state.cells[`${state.farmId}|${state.commodityId}|${state.activityId}|${date}|${slot}`]
+    return state.cells[
+      `${state.farmId}|${state.houseId}|${state.commodityId}|${state.activityId}|${date}|${slot}`
+    ]
   }
 
   function paint(date: string, slot: number, locked: boolean) {

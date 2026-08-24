@@ -3,20 +3,99 @@ import { Search, Shield, Trash2, UserPlus, Warehouse } from 'lucide-react'
 import { directory } from '../data/mock'
 import { roleLabel, useStore } from '../store/AppContext'
 import type { Role, User } from '../types'
-import { AdminOps } from './AdminOps'
+import { Accordion } from './Accordion'
+import {
+  CalibrationCard,
+  FarmDayShiftScheduler,
+  GuardrailsCard,
+  ReportProvisioning,
+} from './AdminOps'
 import { Modal } from './Modal'
 
 export function AdminTab() {
+  const [openId, setOpenId] = useState(() => {
+    try {
+      return sessionStorage.getItem('lp-admin-accordion') || 'provision'
+    } catch {
+      return 'provision'
+    }
+  })
+
+  function toggle(id: string) {
+    setOpenId((prev) => {
+      const next = prev === id ? '' : id
+      try {
+        sessionStorage.setItem('lp-admin-accordion', next || 'provision')
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="lp-page flex flex-1 flex-col">
+      <div className="mb-3">
         <p className="lp-kicker">Admin</p>
-        <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-ink">Users and master data</h2>
+        <h2 className="text-lg font-extrabold tracking-tight text-ink">Users and master data</h2>
+        <p className="text-xs text-slate-500">Open one section at a time — less scroll, fewer clicks.</p>
       </div>
-      <ProvisionCard />
-      <UserDirectory />
-      <EntityCards />
-      <AdminOps />
+      <Accordion
+        id="provision"
+        title="Provision user via SSO"
+        open={openId === 'provision'}
+        onToggle={() => toggle('provision')}
+      >
+        <ProvisionCard />
+      </Accordion>
+      <Accordion
+        id="report"
+        title="Planning report provisioning"
+        open={openId === 'report'}
+        onToggle={() => toggle('report')}
+      >
+        <ReportProvisioning embedded />
+      </Accordion>
+      <Accordion
+        id="shifts"
+        title="Daily farm shift scheduler"
+        open={openId === 'shifts'}
+        onToggle={() => toggle('shifts')}
+      >
+        <FarmDayShiftScheduler embedded />
+      </Accordion>
+      <Accordion
+        id="guardrails"
+        title="Operational guardrails"
+        open={openId === 'guardrails'}
+        onToggle={() => toggle('guardrails')}
+      >
+        <GuardrailsCard embedded />
+      </Accordion>
+      <Accordion
+        id="directory"
+        title="User directory"
+        open={openId === 'directory'}
+        onToggle={() => toggle('directory')}
+      >
+        <UserDirectory />
+      </Accordion>
+      <Accordion
+        id="entities"
+        title="Manage farms, commodities, activities"
+        open={openId === 'entities'}
+        onToggle={() => toggle('entities')}
+      >
+        <EntityCards />
+      </Accordion>
+      <Accordion
+        id="calibration"
+        title="Activity speed calibration"
+        open={openId === 'calibration'}
+        onToggle={() => toggle('calibration')}
+      >
+        <CalibrationCard embedded />
+      </Accordion>
     </div>
   )
 }
@@ -74,12 +153,12 @@ function ProvisionCard() {
   }
 
   return (
-    <section className="lp-panel p-6">
-      <div className="mb-6 flex items-center gap-2">
+    <div>
+      <div className="mb-4 flex items-center gap-2">
         <div className="rounded-[8px] bg-navy p-1.5 text-white">
           <UserPlus className="h-4 w-4" />
         </div>
-        <h3 className="text-lg font-bold text-ink">Provision User via SSO</h3>
+        <p className="text-sm text-slate-500">Search Azure AD, assign scope, then link the user.</p>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="relative">
@@ -189,7 +268,7 @@ function ProvisionCard() {
           Link & Save User
         </button>
       </div>
-    </section>
+    </div>
   )
 }
 
@@ -237,11 +316,11 @@ function UserDirectory() {
   })
 
   return (
-    <section id="admin-users" className="lp-panel overflow-hidden">
-      <div className="flex items-center justify-between border-b border-line bg-mist p-4">
+    <div id="admin-users" className="overflow-hidden rounded-[8px] border border-line">
+      <div className="flex items-center justify-between border-b border-line bg-mist p-3">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-teal" />
-          <h3 className="text-sm font-bold tracking-wide text-ink uppercase">User Directory</h3>
+          <h3 className="text-xs font-bold tracking-wide text-ink uppercase">Filter directory</h3>
         </div>
         <input
           value={filter}
@@ -419,7 +498,7 @@ function UserDirectory() {
           </button>
         </div>
       </Modal>
-    </section>
+    </div>
   )
 }
 
@@ -429,16 +508,20 @@ function EntityCards() {
   const [comName, setComName] = useState('')
   const [actName, setActName] = useState('')
   const [cropFarm, setCropFarm] = useState<string | null>(null)
+  const [editing, setEditing] = useState<{ kind: 'farm' | 'commodity' | 'activity'; id: string; name: string } | null>(
+    null,
+  )
 
   return (
-    <section className="lp-panel p-6">
-      <div className="mb-4 flex items-center gap-2">
+    <div>
+      <div className="mb-3 flex items-center gap-2">
         <Warehouse className="h-4 w-4 text-teal" />
-        <h3 className="text-sm font-bold tracking-wide text-ink uppercase">Global Entity Management</h3>
+        <p className="text-xs text-slate-500">Add, edit, or delete master data. Crops links commodities to a farm.</p>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <EntityColumn
-          title="Farms"
+          title="Manage Farms"
+          placeholder="Add farm…"
           items={state.farms}
           value={farmName}
           onChange={setFarmName}
@@ -446,6 +529,7 @@ function EntityCards() {
             dispatch({ type: 'addFarm', name: farmName })
             setFarmName('')
           }}
+          onEdit={(item) => setEditing({ kind: 'farm', id: item.id, name: item.name })}
           onRemove={(id) => dispatch({ type: 'removeFarm', id })}
           extra={(farm) => (
             <button
@@ -458,7 +542,8 @@ function EntityCards() {
           )}
         />
         <EntityColumn
-          title="Commodities"
+          title="Manage Commodities"
+          placeholder="Add crop…"
           items={state.commodities}
           value={comName}
           onChange={setComName}
@@ -466,10 +551,12 @@ function EntityCards() {
             dispatch({ type: 'addCommodity', name: comName })
             setComName('')
           }}
+          onEdit={(item) => setEditing({ kind: 'commodity', id: item.id, name: item.name })}
           onRemove={(id) => dispatch({ type: 'removeCommodity', id })}
         />
         <EntityColumn
-          title="Activities"
+          title="Manage Activities"
+          placeholder="Add task…"
           items={state.activities}
           value={actName}
           onChange={setActName}
@@ -477,6 +564,7 @@ function EntityCards() {
             dispatch({ type: 'addActivity', name: actName })
             setActName('')
           }}
+          onEdit={(item) => setEditing({ kind: 'activity', id: item.id, name: item.name })}
           onRemove={(id) => dispatch({ type: 'removeActivity', id })}
         />
       </div>
@@ -518,24 +606,77 @@ function EntityCards() {
           </div>
         )}
       </Modal>
-    </section>
+
+      <Modal
+        open={Boolean(editing)}
+        title={
+          editing?.kind === 'farm'
+            ? 'Edit farm'
+            : editing?.kind === 'commodity'
+              ? 'Edit commodity'
+              : 'Edit activity'
+        }
+        onClose={() => setEditing(null)}
+      >
+        {editing && (
+          <div className="space-y-3">
+            <label className="lp-label">
+              Name
+              <input
+                value={editing.name}
+                onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                className="lp-input mt-1 w-full px-3 py-2 text-sm"
+                autoFocus
+              />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setEditing(null)} className="lp-btn-ghost px-4 py-2 text-sm">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const name = editing.name.trim()
+                  if (!name) return
+                  if (editing.kind === 'farm') dispatch({ type: 'renameFarm', id: editing.id, name })
+                  if (editing.kind === 'commodity') dispatch({ type: 'renameCommodity', id: editing.id, name })
+                  if (editing.kind === 'activity') dispatch({ type: 'renameActivity', id: editing.id, name })
+                  dispatch({
+                    type: 'toast',
+                    toast: { tone: 'success', title: 'Updated', message: `Renamed to ${name}.` },
+                  })
+                  setEditing(null)
+                }}
+                className="lp-btn-primary px-4 py-2 text-sm"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
   )
 }
 
 function EntityColumn({
   title,
+  placeholder,
   items,
   value,
   onChange,
   onAdd,
+  onEdit,
   onRemove,
   extra,
 }: {
   title: string
+  placeholder: string
   items: { id: string; name: string }[]
   value: string
   onChange: (v: string) => void
   onAdd: () => void
+  onEdit: (item: { id: string; name: string }) => void
   onRemove: (id: string) => void
   extra?: (item: { id: string; name: string }) => ReactNode
 }) {
@@ -551,7 +692,7 @@ function EntityColumn({
           onKeyDown={(e) => {
             if (e.key === 'Enter') onAdd()
           }}
-          placeholder={`Add ${title.toLowerCase().slice(0, -1)}…`}
+          placeholder={placeholder}
           className="lp-input flex-1 px-3 py-1.5 text-sm"
         />
         <button type="button" onClick={onAdd} className="lp-btn-primary px-3 py-1.5">
@@ -564,6 +705,13 @@ function EntityColumn({
             <span className="font-medium text-ink">{item.name}</span>
             <div className="flex items-center gap-2">
               {extra?.(item)}
+              <button
+                type="button"
+                onClick={() => onEdit(item)}
+                className="rounded bg-pastel-blue px-2 py-1 text-[10px] font-bold text-blue-600"
+              >
+                Edit
+              </button>
               <button
                 type="button"
                 onClick={() => onRemove(item.id)}

@@ -6,7 +6,7 @@ Internal reference of everything built in this clickable prototype. Use this whe
 **Built by:** Augusta Hitech  
 **App name:** Labour Planner — Workforce Allocation Platform  
 **Type:** Interactive React web prototype (not Figma, not production)  
-**Data:** Browser `localStorage` only (`labour-planner-prototype-v2`). No Azure, no backend.
+**Data:** Browser `localStorage` only (`labour-planner-prototype-v6`). No Azure, no backend.
 
 ---
 
@@ -24,17 +24,13 @@ A working website that shows how supervisors plan labour by farm, commodity, act
 
 **Fully interactive:**
 
-- Role-based tabs and farm scope
-- Cascading farm → commodity → activity filters
-- 30-minute click-and-drag grid
-- Hours and FTE calculations
-- Notes, submit, audit reasons
-- Summary KPIs, grouping, notes drawer
-- Admin: SSO lookup, user CRUD, farms / commodities / activities
-- Greenhouse houses MINI / FRED / HARVEST in Planning Horizon, farm map, rate/hr
-- Monthly budget plan (12 months + consolidated) and house row-wise selector
-- Summary month picker, planned-hours **pie chart**, planned-vs-actual **bar graph**
-- Admin reports, shift scheduler, guardrails, speed calibration
+- Role-based tabs and farm scope (Planner, Summary, Map View, Admin)
+- **Plan type** drives the planner surface (weekly labour, monthly budget, harvest, gantt)
+- Cascading farm → commodity filters; activity expand on weekly labour
+- Hours and FTE calculations; notes, submit, audit reasons
+- Summary KPIs, detailed table, Group by, notes drawer; analytics in accordion
+- Admin: SSO lookup, user CRUD, farms / commodities / activities, reports, shifts, guardrails, calibration
+- Sticky one-page chrome; Sunset Grown–aligned greens and soft page atmosphere
 
 ---
 
@@ -52,14 +48,15 @@ A working website that shows how supervisors plan labour by farm, commodity, act
 
 **Brand colours** (`src/index.css`):
 
-- Brand green `#00a63f` / dark `#008a35`
-- Forest navy `#16382d` (header, chips, login CTA)
-- Teal `#0f766e` (kickers, accents)
-- Mist `#eef4ef` / line `#d4e2d8` (page and panel borders)
-- Sunset `#ea580c` (Power BI “actual” bars)
+- Brand green `#2db84b` / dark `#1f9a3a`
+- Forest navy `#163528` (header, chips, login CTA)
+- Teal `#1a7a4c` (kickers, accents)
+- Mist `#f3faf5` / line `#d5e6da` (page and panel borders)
+- Sunset `#e85d04` (accents / audit cues)
 - Pastel blue `#ebf5ff` / pastel red `#fff5f5` (admin Edit / Delete)
-- Rounded corners **8px** throughout
-- Shared classes: `lp-panel`, `lp-input`, `lp-select`, `lp-chip`, `lp-btn-primary`, `lp-btn-ghost`
+- Page atmosphere: soft green/orange radial gradients (fixed)
+- Rounded panels **12px**; sticky bars / submit **14px**
+- Shared classes: `lp-panel`, `lp-input`, `lp-select`, `lp-chip`, `lp-btn-primary`, `lp-btn-ghost`, `lp-sticky-bar`, `lp-accordion*`, `lp-header-glass`, `lp-login-hero`
 
 **Run locally:** `npm install` then `npm run dev` → usually http://localhost:5173  
 **Printable guide:** http://localhost:5173/guide.html  
@@ -73,7 +70,7 @@ A working website that shows how supervisors plan labour by farm, commodity, act
 
 ### 1. Login (no user signed in)
 
-- Mastronardi Produce branding, leaf icon, “Labour Planner”
+- **Sunset Grown · Mastronardi** hero (leaf mark, feature tags) + mist sign-in card
 - Azure AD SSO simulation banner
 - Persona dropdown: Farm Planner (default), Site Manager, System Admin
 - **Authenticate with Azure AD** (Microsoft 4-square mark)
@@ -84,10 +81,10 @@ Mike Peterson exists in the directory but is **not** a login persona. He exists 
 
 ### 2. App shell (after login)
 
-Sticky header (forest navy):
+Sticky header (forest navy gradient + green→sunset accent bar):
 
-- **LP** mark + title **Labour Planner** + “Mastronardi Produce · Farm operations”
-- Tab pills: Planner / Summary / Admin (role-gated)
+- **LP** mark + title **Labour Planner** + “Sunset Grown · Mastronardi Produce · Farm ops module”
+- Tab pills: Planner / Summary / Map View / Admin (role-gated)
 - **Guide**, signed-in name, role label, initials avatar, **Logout**
 
 Tabs (role-gated):
@@ -96,6 +93,7 @@ Tabs (role-gated):
 |---|---|---|---|
 | Planner | Yes | Hidden | Yes |
 | Summary | Yes | Yes (lands here) | Yes |
+| Map View | Yes | Yes | Yes |
 | Admin | Hidden | Hidden | Yes |
 
 Site Manager cannot see or edit the grid. Submit is disabled for them.
@@ -106,9 +104,9 @@ Site Manager cannot see or edit the grid. Submit is disabled for them.
 
 | Role key | Label | Who | Farms | Tabs | Can paint grid / submit |
 |---|---|---|---|---|---|
-| `planner` | Farm Planner | Alex Rivera | North Farm, Maroa, Ohio | Planner + Summary | Yes, assigned farms only |
-| `manager` | Site Manager | Sarah Johnson | All farms | Summary only | No |
-| `admin` | System Admin | Jordan Hale | All farms | Planner + Summary + Admin | Yes, all farms |
+| `planner` | Farm Planner | Alex Rivera | North Farm, Maroa, Ohio | Planner + Summary + Map | Yes, assigned farms only |
+| `manager` | Site Manager | Sarah Johnson | All farms | Summary + Map | No |
+| `admin` | System Admin | Jordan Hale | All farms | Planner + Summary + Map + Admin | Yes, all farms |
 
 **Farm restriction:** planners only see farms on their SSO profile. Managers and admins see every farm.
 
@@ -118,15 +116,23 @@ Site Manager cannot see or edit the grid. Submit is disabled for them.
 
 ## Planner tab
 
-### Planning horizon
+### Plan type (primary control)
 
-- **Weekly** (default) — 7 days, 6:00 AM–5:00 PM, **22 slots of 30 minutes**. Prev/next week arrows.
-- **Monthly** — all **12 months** budget grid: planned hours, rate / hr, planned budget, consolidated budget plan footer. With a house selected, a **row-wise selector** replaces the old week×month hours grid.
-- Planner has **no Yearly** horizon (yearly still available on Summary filters).
-- **MINI / FRED / HARVEST** chips live in Planning Horizon (Greenhouse house section removed).
-- Year selector: **2025, 2026, 2027**.
+Sticky filter bar. **Plan type** swaps the whole workspace:
 
-Past dates stay locked in the weekly grid.
+| Plan type | Grid |
+|---|---|
+| Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
+| Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr |
+| Harvest (Weekly) | Bay A/B row picker, day tabs Mon–Sat, reason codes |
+| Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
+| Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
+
+- Year selector: **2025, 2026, 2027**. Planning week when the plan type needs it.
+- Farm map pin opens greenhouse layout. Commodity shown when the plan type needs it.
+- Notes live in a sticky accordion; **Submit Plan** stays one click away.
+
+Past dates stay locked in weekly labour slots.
 
 ### Operational scope (cascading filters)
 
@@ -136,7 +142,7 @@ Past dates stay locked in the weekly grid.
 
 **Rate / hr ($)** next to headcount. Footer shows labour cost = hours × rate, and estimated rows from Admin speed calibration.
 
-Each **farm + commodity + activity** combination is its own plan. Switching activity shows a different grid.
+Each **farm + house + commodity + activity** combination is its own plan. Switching MINI / FRED / HARVEST or activity (including Tear-out / Planting) shows a different grid.
 
 **North Farm demo crop filter:** Beef, TOV, Campari only (not Strawberry, Lettuce, Peppers, Snacks).
 
@@ -232,7 +238,28 @@ Farm Planners only see their assigned farms’ data. Site Managers and Admins se
 
 ---
 
-## Admin tab (System Admin only)
+## Sunset-aligned one-page UX
+
+- Tokens: Sunset-adjacent produce green (`#2db84b`), warm mist page, brand accent bar on header
+- Sticky context bars on Planner + Summary; Notes / Analytics in accordions
+- Admin: single-open accordion sections (session-remembered)
+- Embed framing: “Sunset Grown · Mastronardi Produce · Farm ops module”
+- Goal: primary grid/table usable without scrolling past chrome on ~1440×900
+- Visual polish: soft page atmosphere (green/orange radials), glass sticky bars, gradient primary buttons, richer login hero + navy header, elevated KPI cards
+
+
+**Plan type** dropdown drives the entire planner surface:
+
+| Plan type | Grid |
+|---|---|
+| Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
+| Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr; KPIs |
+| Harvest (Weekly) | Bay A/B row picker, day tabs Mon–Sat, reason codes |
+| Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
+| Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
+
+Also: **Map View** tab, Year + Planning week dropdowns, Farm/Commodity scope only as needed.
+
 
 ### Provision User via SSO
 
@@ -273,10 +300,18 @@ Incomplete save (no person or no role) shows a warning toast.
 Three cards: **Farms**, **Commodities**, **Activities**.
 
 - Type a name, press **+** or Enter to add
-- **Delete** removes from dropdowns (and from farm crop/activity lists)
+- **Edit** opens a rename modal; **Delete** removes from dropdowns (and from farm crop/activity lists)
 - New farm gets the first two commodities and all activities; admins/managers auto-gain that farm
 - New activity is added to **all** farm profiles
 - On a farm, **Crops** modal sets which commodities that farm grows (this drives Planner’s commodity filter)
+
+### Planning report provisioning
+
+Enable/disable each Power BI labour report. Assign **farms**, **commodities**, and **activities** included in the report via chips.
+
+### Operational guardrails
+
+Master On/Off plus a condition list. Admins can **Add condition** (name, metric, threshold, farm scope, activity scope), then Edit / On-Off / Delete. Matching enabled conditions cap slot headcount and block weekly-hours submit in Planner.
 
 ---
 

@@ -83,6 +83,22 @@ export function weeksInMonth(year: number, month: number): Date[] {
   return weeks
 }
 
+export function weeksInYear(year: number): Date[] {
+  let cursor = startOfWeek(new Date(year, 0, 4))
+  const weeks: Date[] = []
+  for (let i = 0; i < 60; i++) {
+    const { year: wy } = isoWeek(cursor)
+    if (wy === year) weeks.push(new Date(cursor))
+    if (wy > year) break
+    cursor = addDays(cursor, 7)
+  }
+  return weeks
+}
+
+export function biWeekDates(weekStart: Date): Date[] {
+  return Array.from({ length: 14 }, (_, i) => addDays(weekStart, i))
+}
+
 export function slotLabel(index: number): string {
   const minutes = DAY_START_HOUR * 60 + index * 30
   const h = Math.floor(minutes / 60)
@@ -96,21 +112,23 @@ export const SLOT_LABELS = Array.from({ length: SLOT_COUNT }, (_, i) => slotLabe
 
 export function cellKey(parts: {
   farmId: string
+  houseId: string
   commodityId: string
   activityId: string
   date: string
   slot: number
 }): string {
-  return `${parts.farmId}|${parts.commodityId}|${parts.activityId}|${parts.date}|${parts.slot}`
+  return `${parts.farmId}|${parts.houseId}|${parts.commodityId}|${parts.activityId}|${parts.date}|${parts.slot}`
 }
 
 export function submissionKey(
   farmId: string,
+  houseId: string,
   weekKey: string,
   commodityId: string,
   activityId: string,
 ): string {
-  return `${farmId}|${weekKey}|${commodityId}|${activityId}`
+  return `${farmId}|${houseId}|${weekKey}|${commodityId}|${activityId}`
 }
 
 export function hoursFromHeadcount(headcount: number): number {
@@ -120,6 +138,7 @@ export function hoursFromHeadcount(headcount: number): number {
 export function hoursForWeek(args: {
   cells: Record<string, { headcount: number }>
   farmId: string
+  houseId: string
   commodityId: string
   activityIds: string[]
   weekStart: Date
@@ -131,6 +150,7 @@ export function hoursForWeek(args: {
       for (let slot = 0; slot < SLOT_COUNT; slot++) {
         const key = cellKey({
           farmId: args.farmId,
+          houseId: args.houseId,
           commodityId: args.commodityId,
           activityId,
           date,

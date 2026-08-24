@@ -13,12 +13,12 @@
     />
     <style>
       :root {
-        --brand: #00a63f;
-        --ink: #14261f;
-        --navy: #16382d;
+        --brand: #2db84b;
+        --ink: #12241c;
+        --navy: #163528;
         --muted: #5c7464;
-        --line: #d4e2d8;
-        --paper: #eef4ef;
+        --line: #d5e6da;
+        --paper: #f3faf5;
       }
       * {
         box-sizing: border-box;
@@ -27,7 +27,9 @@
         margin: 0;
         font-family: "Plus Jakarta Sans", system-ui, sans-serif;
         color: var(--ink);
-        background: var(--paper);
+        background:
+          radial-gradient(ellipse 90% 60% at 0% -10%, rgb(45 184 75 / 0.12), transparent 55%),
+          linear-gradient(180deg, #f6fbf7 0%, #e8f3eb 100%);
         line-height: 1.55;
       }
       .wrap {
@@ -36,11 +38,12 @@
         padding: 32px 20px 64px;
       }
       header.hero {
-        background: white;
+        background: rgb(255 255 255 / 0.94);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 28px;
         margin-bottom: 28px;
+        box-shadow: 0 8px 24px rgb(18 36 28 / 0.05);
       }
       .eyebrow {
         font-size: 11px;
@@ -67,13 +70,13 @@
       a.btn,
       button.btn {
         display: inline-block;
-        background: var(--brand);
+        background: linear-gradient(180deg, #3bc457 0%, #2db84b 45%, #1f9a3a 100%);
         color: white;
         text-decoration: none;
         font-weight: 700;
         font-size: 13px;
         border: 0;
-        border-radius: 8px;
+        border-radius: 10px;
         padding: 10px 16px;
         cursor: pointer;
       }
@@ -83,11 +86,12 @@
         border: 1px solid var(--line);
       }
       section {
-        background: white;
+        background: rgb(255 255 255 / 0.94);
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 24px 28px;
         margin-bottom: 16px;
+        box-shadow: 0 6px 18px rgb(18 36 28 / 0.04);
       }
       h2 {
         margin: 0 0 12px;
@@ -115,19 +119,19 @@
         vertical-align: top;
       }
       th {
-        background: #f8fafc;
+        background: #f7fbf8;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         color: #64748b;
       }
       .note {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
+        background: #ebf8ef;
+        border: 1px solid #b7e4c0;
+        border-radius: 10px;
         padding: 12px 14px;
         font-size: 13.5px;
-        color: #1e40af;
+        color: #1a7a4c;
       }
       footer {
         font-size: 12px;
@@ -149,6 +153,7 @@
           border: 0;
           padding: 0 0 16px;
           margin: 0 0 16px;
+          box-shadow: none;
         }
       }
     </style>
@@ -156,7 +161,7 @@
   <body>
     <div class="wrap">
       <header class="hero">
-        <p class="eyebrow">Mastronardi Produce · Farm Operations</p>
+        <p class="eyebrow">Sunset Grown · Mastronardi Produce · Farm Operations</p>
         <h1>Labour Planner — Self-Exploration Guide</h1>
         <p class="lede">
           Use this document to click through the prototype on your own. You do not need a presenter,
@@ -172,14 +177,14 @@
         <h2>1. What you are looking at</h2>
         <p>
           Labour Planner is the proposed workforce allocation application for Mastronardi Produce
-          Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time
-          slot. Managers review totals and notes. Admins manage users and master data.
+          Farm Operations, styled for embed under <strong>Sunset Grown</strong>. Supervisors plan by
+          farm, commodity, activity, and time. Managers review totals and notes. Admins manage users
+          and master data.
         </p>
         <p>
-          This prototype shows how that website will look and behave. Azure AD, historic
-          recommendations, Power BI, and Azure SQL are <strong>simulated</strong>. Filters, the grid,
-          calculations, notes, roles, and admin actions work for real in the prototype. Data stays in
-          your browser.
+          Azure AD, historic recommendations, Power BI, and Azure SQL are <strong>simulated</strong>.
+          Plan types, filters, grids, calculations, notes, roles, and admin actions work for real.
+          Data stays in your browser.
         </p>
       </section>
 
@@ -187,15 +192,15 @@
         <h2>2. How to open the prototype</h2>
         <ol>
           <li>Open the prototype URL you were given, or click <strong>Open the prototype</strong> above.</li>
-          <li>You should see the Mastronardi Produce sign-in screen.</li>
+          <li>You should see the Sunset Grown · Mastronardi sign-in screen.</li>
           <li>
-            Keep this page nearby, or click <strong>Exploration guide</strong> on the sign-in screen
-            and in the app header.
+            Keep this page nearby, or click <strong>Exploration guide</strong> on sign-in /
+            <strong>Guide</strong> in the app header.
           </li>
         </ol>
         <p class="note">
-          If the app looks stuck from an earlier session, use Exploration guide → Reset prototype
-          data, then sign in again.
+          If the app looks stuck from an earlier session, use Guide → Reset prototype data, then
+          sign in again.
         </p>
       </section>
 
@@ -214,24 +219,24 @@
             <tr>
               <td>Farm Planner (assigned farms)</td>
               <td>Alex Rivera, Supervisor</td>
-              <td>Planner + Summary. Only North Farm, Maroa, and Ohio.</td>
+              <td>Planner + Summary + Map. Only North Farm, Maroa, and Ohio.</td>
             </tr>
             <tr>
               <td>Site Manager (summary only)</td>
               <td>Sarah Johnson, Operations</td>
-              <td>Summary only. All farms. No grid editing. No Admin.</td>
+              <td>Summary + Map. All farms. No grid editing. No Admin.</td>
             </tr>
             <tr>
               <td>System Admin (full access)</td>
               <td>Jordan Hale, FarmOps IT</td>
-              <td>Planner, Summary, and Admin. All farms.</td>
+              <td>Planner, Summary, Map, and Admin. All farms.</td>
             </tr>
           </tbody>
         </table>
         <h3>Try this</h3>
         <ol>
           <li>Leave the dropdown on Farm Planner and click Authenticate with Azure AD.</li>
-          <li>Confirm the header shows Alex Rivera / Farm Planner, with Planner and Summary only.</li>
+          <li>Confirm the header shows Alex Rivera / Farm Planner, with Planner, Summary, and Map View.</li>
           <li>Log out, sign in as Site Manager, and confirm there is no Planner tab.</li>
           <li>Log out, sign in as System Admin, and confirm the Admin tab appears.</li>
           <li>Sign back in as Farm Planner for the tour below.</li>
@@ -240,73 +245,69 @@
 
       <section>
         <h2>4. Suggested 15-minute tour</h2>
-        <h3>A. Cascading filters</h3>
+        <h3>A. Plan type + farm scope</h3>
         <p>
-          Planner → Farm = <strong>North Farm</strong>. Commodity should list only Beef, TOV, and
-          Campari.
+          Planner → Plan type = <strong>Labour (Weekly)</strong>. Farm = <strong>North Farm</strong>.
+          Commodity should list only Beef, TOV, and Campari.
         </p>
-        <h3>B. Unlock the grid and paint hours</h3>
+        <h3>B. Expand an activity and paint hours</h3>
         <p>
-          Commodity = Beef, Activity = Clipping, Number of people = <strong>5</strong>. Click the
-          first unlocked cell and drag across <strong>six</strong> slots. Hours should increase by
-          <strong>15.0</strong> (5 × 6 × 0.5). Grey locked cells are past days.
+          Commodity = Beef. Expand <strong>Clipping</strong> in the bi-weekly grid. Drag across
+          unlocked slots. Hours = people × slots × 0.5. Grey locked cells are past days.
         </p>
-        <h3>C. Historic recommendation</h3>
+        <h3>C. Switch plan types</h3>
         <p>
-          On the blue banner: View Logic, then Apply Recommendation. Overwrite a few cells with a
-          different headcount.
+          Try Monthly Budget, Harvest, Tear-Out / Planting Gantt, then return to Labour Weekly.
         </p>
         <h3>D. Notes and submit</h3>
         <p>
-          Add a subject and comment, Save note, then Submit Schedule. Submit again on the same farm /
-          week / activity to see the required reason-for-change dialog.
+          Open Notes &amp; submit (or use sticky Submit Plan). Save note, Submit Plan. Submit again
+          to see the reason-for-change dialog.
         </p>
         <h3>E. Summary</h3>
         <p>
-          Open Summary. Read the KPI cards. Change Group by. Click View Notes for the audit drawer.
+          Sticky filters + KPI cards. Change Group table by. View Notes. Analytics charts live in a
+          collapsed accordion.
         </p>
-        <h3>F. Other roles</h3>
+        <h3>F. Map + other roles</h3>
         <p>
-          Site Manager stays on Summary. System Admin → Admin: search Azure AD for “Priya” and
-          provision her as a Farm Planner.
+          Map View → pick a farm → Show map. Site Manager = Summary + Map. System Admin → Admin
+          accordions: search “Priya” and provision as Farm Planner.
         </p>
       </section>
 
       <section>
         <h2>5. Planner tab</h2>
         <ul>
-          <li><strong>Weekly</strong> — 6:00 AM–5:00 PM in 30-minute slots. Arrows change week.</li>
-          <li><strong>Monthly</strong> — all 12 months with planned hours, rate / hr, and consolidated budget. MINI / FRED / HARVEST open a row-wise house grid.</li>
-          <li><strong>MINI / FRED / HARVEST</strong> — in Planning Horizon (not a separate Greenhouse house section).</li>
-          <li>Farm is limited by your profile. Commodity is limited by the farm.</li>
-          <li>The grid stays locked until Active Activity is selected.</li>
-          <li>Hours per cell = people × 0.5. FTE = total hours ÷ 40. Drag with 0 to clear.</li>
+          <li><strong>Labour (Weekly)</strong> — bi-weekly 14-day; expand activity to paint 30-min slots.</li>
+          <li><strong>Labour (Monthly Budget)</strong> — annual activity × month + rate $/hr.</li>
+          <li><strong>Harvest (Weekly)</strong> — bay/row picking + reason codes.</li>
+          <li><strong>Tear-Out / Planting Gantt</strong> — Light/Medium/Heavy day cells.</li>
+          <li>Sticky Notes accordion; Submit Plan stays one click away.</li>
+          <li>Farm limited by profile. Commodity limited by farm when the plan type needs it.</li>
         </ul>
       </section>
 
       <section>
         <h2>6. Summary tab</h2>
         <ul>
-          <li>KPI cards: planned hours, FTE, unique activities.</li>
-          <li>Filters and Group by rebuild the table immediately.</li>
-          <li>View Notes opens a side drawer (author, timestamp, farm, activity, week).</li>
-          <li>Pie chart: planned hours allocation by Group by.</li>
-          <li>Bar graph: Power BI planned (green) vs actual (orange) — prototype visual.</li>
+          <li>Sticky filters; Year always available; Monthly also has a month picker.</li>
+          <li>KPI cards: FTE, planned hours, unique activities.</li>
+          <li>Group table by Detailed / Farm / Commodity / Activity / Planner / Horizon.</li>
+          <li>Table includes @ Notes; analytics charts sit in a collapsed accordion.</li>
         </ul>
       </section>
 
       <section>
-        <h2>7. Admin tab (System Admin only)</h2>
+        <h2>7. Map View + Admin</h2>
         <ul>
+          <li><strong>Map View</strong> — farm chips + Show map (greenhouse layout).</li>
           <li>
-            Directory search: priya, luis, emily, david, or hannah. Name auto-fills. Choose a role,
-            assign scope for planners, Link &amp; Save User.
+            <strong>Admin</strong> (System Admin only) — accordions for Provision, Reports, Shift
+            scheduler, Guardrails, Directory, Entities, Calibration.
           </li>
-          <li>User Directory: filter, pastel Edit, pastel Delete. You cannot delete yourself.</li>
-          <li>
-            Entity cards add/delete Farms, Commodities, Activities. Farm → Crops sets which
-            commodities that farm grows.
-          </li>
+          <li>Directory search: priya, luis, emily, david, or hannah.</li>
+          <li>Entity Edit/Delete; farm Crops drives Planner commodities.</li>
         </ul>
       </section>
 
@@ -341,10 +342,6 @@
               <td>Only System Admin sees the Admin tab.</td>
             </tr>
             <tr>
-              <td>Recommendation override</td>
-              <td>You can still paint over recommended cells.</td>
-            </tr>
-            <tr>
               <td>Invalid people input</td>
               <td>Negatives, decimals, and letters are ignored.</td>
             </tr>
@@ -373,7 +370,7 @@
           <tbody>
             <tr>
               <td>Grid will not accept clicks</td>
-              <td>Select an Active Activity. Use a day that is not in the past.</td>
+              <td>On Labour Weekly, expand an activity. Use a day that is not in the past.</td>
             </tr>
             <tr>
               <td>Commodity list looks wrong</td>
@@ -389,7 +386,7 @@
             </tr>
             <tr>
               <td>Numbers look like an old session</td>
-              <td>Exploration guide → Reset prototype data, then sign in again.</td>
+              <td>Guide → Reset prototype data, then sign in again.</td>
             </tr>
           </tbody>
         </table>
@@ -399,13 +396,13 @@
         <h2>11. What production will add later</h2>
         <p>
           Live Azure AD SSO, Azure SQL persistence, Priva / Hortimax feeds, and embedded Power BI
-          reports inside Mastronardi’s tenant. This prototype is for look, flow, and rules — not
-          go-live hosting.
+          inside Mastronardi’s tenant (Sunset Grown embed-ready). This prototype is for look, flow,
+          and rules — not go-live hosting.
         </p>
       </section>
 
       <footer>
-        Labour Planner · Augusta Hitech for Mastronardi Produce Farm Operations
+        Labour Planner · Augusta Hitech for Mastronardi Produce / Sunset Grown
       </footer>
     </div>
   </body>

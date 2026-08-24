@@ -3,6 +3,7 @@ import { AdminTab } from './components/AdminTab'
 import { AppShell } from './components/AppShell'
 import { HelpModal } from './components/HelpModal'
 import { LoginScreen } from './components/LoginScreen'
+import { MapViewTab } from './components/MapViewTab'
 import { NotesDrawer } from './components/NotesDrawer'
 import { PlannerTab, ReasonModal } from './components/PlannerTab'
 import { SummaryTab } from './components/SummaryTab'
@@ -25,6 +26,7 @@ function Prototype() {
       <AppShell>
         {state.tab === 'planner' && <PlannerTab />}
         {state.tab === 'summary' && <SummaryTab />}
+        {state.tab === 'map' && <MapViewTab />}
         {state.tab === 'admin' && isAdmin && <AdminTab />}
       </AppShell>
       <NotesDrawer />

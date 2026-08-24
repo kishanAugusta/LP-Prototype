@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BookOpen, Leaf, ShieldCheck } from 'lucide-react'
+import { BookOpen, Leaf, ShieldCheck, Sparkles } from 'lucide-react'
 import { loginOptions } from '../data/mock'
 import { useStore } from '../store/AppContext'
 
@@ -9,37 +9,61 @@ export function LoginScreen() {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="relative hidden flex-col justify-between bg-navy p-12 text-white lg:flex">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-brand">
+      <div className="lp-login-hero relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+            backgroundSize: '22px 22px',
+          }}
+          aria-hidden
+        />
+        <div className="relative flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-gradient-to-br from-brand to-brand-dark shadow-lg shadow-brand/40 ring-1 ring-white/20">
             <Leaf className="h-5 w-5" />
           </span>
-          <span className="text-sm font-semibold tracking-[0.2em] uppercase text-white/70">
-            Mastronardi Produce
+          <span className="text-sm font-semibold tracking-[0.2em] uppercase text-white/75">
+            Sunset Grown · Mastronardi
           </span>
         </div>
-        <div>
-          <p className="text-sm font-semibold tracking-[0.18em] text-brand uppercase">Farm operations</p>
-          <h1 className="mt-3 max-w-md text-5xl font-extrabold leading-[1.1] tracking-tight">Labour Planner</h1>
+        <div className="relative">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold tracking-[0.14em] text-[#9dffb0] uppercase backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5" />
+            Farm operations
+          </p>
+          <h1 className="mt-4 max-w-md text-5xl font-extrabold leading-[1.08] tracking-tight">
+            Labour Planner
+          </h1>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
             Allocate crews by farm, greenhouse house, commodity, and 30-minute slot. One schedule for
-            supervisors, managers, and admins.
+            supervisors, managers, and admins — ready to embed under Sunset Grown.
           </p>
+          <div className="mt-8 flex flex-wrap gap-2">
+            {['Weekly labour', 'Harvest rows', 'Budget plan'].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-        <p className="text-xs text-white/40">Workforce allocation · greenhouse labour</p>
+        <p className="relative text-xs text-white/40">Workforce allocation · greenhouse labour</p>
       </div>
 
-      <div className="flex items-center justify-center bg-mist p-6">
+      <div className="flex items-center justify-center bg-gradient-to-br from-[#f6fbf7] via-mist to-[#e8f3eb] p-6">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <p className="text-xs font-bold tracking-[0.2em] text-teal uppercase">Mastronardi Produce</p>
+            <p className="text-xs font-bold tracking-[0.2em] text-teal uppercase">Sunset Grown</p>
             <h1 className="mt-1 text-3xl font-extrabold text-ink">Labour Planner</h1>
           </div>
-          <div className="lp-panel p-8">
-            <h2 className="text-xl font-bold text-ink">Sign in</h2>
+          <div className="lp-panel p-8 shadow-xl shadow-navy/5">
+            <h2 className="text-xl font-extrabold tracking-tight text-ink">Sign in</h2>
             <p className="mt-1 text-sm text-slate-500">Choose a role to explore the planner.</p>
 
-            <div className="mt-6 rounded-[8px] border border-teal/20 bg-teal/5 p-4 text-xs leading-relaxed text-teal">
+            <div className="mt-6 rounded-[12px] border border-brand/20 bg-gradient-to-br from-brand/5 to-teal/5 p-4 text-xs leading-relaxed text-teal">
               <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
               <strong>Azure AD SSO simulation:</strong> pick a persona to see role-based farms, tabs, and
               permissions. Production will use corporate single sign-on.
@@ -65,7 +89,7 @@ export function LoginScreen() {
             <button
               type="button"
               onClick={() => dispatch({ type: 'login', userId })}
-              className="mt-5 flex w-full items-center justify-center gap-3 rounded-[8px] bg-navy py-3.5 font-bold text-white transition-colors hover:bg-[#1c4a3a]"
+              className="mt-5 flex w-full items-center justify-center gap-3 rounded-[12px] bg-gradient-to-b from-navy to-[#0f221a] py-3.5 font-bold text-white shadow-lg shadow-navy/25 transition hover:brightness-110"
             >
               <MicrosoftMark />
               Authenticate with Azure AD

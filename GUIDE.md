@@ -3,14 +3,15 @@
 Use this guide to click through the prototype on your own. You do not need a presenter, Figma, or Azure access. Every button in the app is live; this document tells you what to try and what you should see.
 
 **Prototype type:** clickable web application (not a static mock)  
+**Brand framing:** Sunset Grown · Mastronardi Produce (farm ops module)  
 **Data:** stored in your browser only  
-**Reset:** header → **Exploration guide** → **Reset prototype data**
+**Reset:** header → **Guide** → **Reset prototype data**
 
 ---
 
 ## 1. What you are looking at
 
-Labour Planner is the proposed workforce allocation application for Mastronardi Produce Farm Operations. Supervisors plan labour by farm, commodity, activity, and 30-minute time slot. Managers review totals and notes. Admins manage users and master data.
+Labour Planner is the proposed workforce allocation application for Mastronardi Produce Farm Operations, styled to sit under the **Sunset Grown** parent brand. Supervisors plan labour by farm, commodity, activity, and time; managers review totals and notes; admins manage users and master data.
 
 This prototype shows how that website will look and behave. The following are **simulated** so you can explore without production systems:
 
@@ -19,15 +20,15 @@ This prototype shows how that website will look and behave. The following are **
 - Power BI planned-versus-actual charts
 - Save to Azure SQL (data stays in this browser)
 
-Everything else — filters, the grid, calculations, notes, roles, and admin actions — works for real in the prototype.
+Everything else — plan types, filters, grids, calculations, notes, roles, and admin actions — works for real in the prototype.
 
 ---
 
 ## 2. How to open the prototype
 
 1. Open the prototype URL you were given (for example `http://localhost:5173` or a shared HTTPS link).
-2. You should see the **Mastronardi Produce** sign-in screen.
-3. Keep this guide nearby, or click **Exploration guide** on the sign-in screen / in the app header.
+2. You should see the **Sunset Grown · Mastronardi** sign-in screen.
+3. Keep this guide nearby, or click **Open the exploration guide** on sign-in / **Guide** in the app header.
 
 If the app looks empty or “stuck” after an earlier session, reset prototype data from the guide panel and sign in again.
 
@@ -39,16 +40,16 @@ Production will use Azure AD. Here you pick a role so you can see different perm
 
 | Persona | Who it represents | What you can do |
 |---|---|---|
-| **Farm Planner (assigned farms)** | Supervisor — Alex Rivera | Planner + Summary. Only North Farm, Maroa, and Ohio. |
-| **Site Manager (summary only)** | Operations — Sarah Johnson | Summary only. All farms. Cannot edit the grid or open Admin. |
-| **System Admin (full access)** | FarmOps IT — Jordan Hale | Planner, Summary, and Admin. All farms. |
+| **Farm Planner (assigned farms)** | Supervisor — Alex Rivera | Planner + Summary + Map. Only North Farm, Maroa, and Ohio. |
+| **Site Manager (summary only)** | Operations — Sarah Johnson | Summary + Map. All farms. Cannot edit the grid or open Admin. |
+| **System Admin (full access)** | FarmOps IT — Jordan Hale | Planner, Summary, Map, and Admin. All farms. |
 
 **Try this**
 
 1. Leave the dropdown on **Farm Planner**.
 2. Click **Authenticate with Azure AD**.
-3. Confirm the header shows **Alex Rivera / Farm Planner**.
-4. Confirm you see **Planner** and **Summary** tabs, and **no Admin tab**.
+3. Confirm the header shows **Alex Rivera / Farm Planner** and the Sunset Grown subtitle.
+4. Confirm you see **Planner**, **Summary**, and **Map View** tabs, and **no Admin tab**.
 5. Click **Logout** (top right), sign in as **Site Manager**, and confirm there is **no Planner tab**.
 6. Log out again and sign in as **System Admin**. Confirm the **Admin** tab appears.
 
@@ -60,97 +61,90 @@ Stay signed in as **Farm Planner** for the next section.
 
 Follow these steps in order the first time. After that, jump to any section below.
 
-### Step A — Cascading filters (North Farm)
+### Step A — Plan type + farm scope
 
-1. Open the **Planner** tab.
-2. Set **Farm** to **North Farm**.
-3. Open the **Commodity** dropdown.
+1. Open the **Planner** tab. The sticky **Plan type** bar stays at the top.
+2. Leave **Plan type** on **Labour (Weekly)**.
+3. Set **Farm** to **North Farm**.
+4. Open the **Commodity** dropdown.
 
-**You should see only Beef, TOV, and Campari.** Other crops (Strawberry, Lettuce, Peppers, Snacks) belong to other farms. This is the farm-to-commodity rule.
+**You should see only Beef, TOV, and Campari.** Other crops belong to other farms.
 
-### Step B — Unlock the grid and paint hours
+### Step B — Expand an activity and paint hours
 
 1. Set **Commodity** to **Beef**.
-2. Set **Active Activity** to **Clipping**. The grid unlocks.
-3. Set **Number of people** to **5** (digits only; decimals and letters are rejected).
-4. Click the first open (unlocked) 30-minute cell, hold, and drag across **six** slots.
+2. In the bi-weekly grid, expand **Clipping** (or another activity row).
+3. Set headcount if prompted, then click an unlocked 30-minute cell and drag across **six** slots.
 
-**You should see 15.0 hours added** (5 people × 6 slots × 0.5 hours). Footer totals and FTE update immediately. FTE = planned hours ÷ 40.
+**You should see hours increase** (people × slots × 0.5). Totals update immediately.
 
-Grey cells with a lock are **past days**. You cannot edit them.
+Grey / locked cells are **past days**. You cannot edit them.
 
-### Step C — Historic recommendation
+### Step C — Switch plan types (quick look)
 
-1. If the blue **Historic Baseline Recommendation** banner is visible, click **View Logic**, then **Apply Recommendation**.
-2. The unlocked slots fill from the historic pattern.
-3. Enter a different headcount and drag over a few cells to overwrite the recommendation.
+1. Change **Plan type** to **Labour (Monthly Budget)** — annual activity × month budget.
+2. Change to **Harvest (Weekly)** — bay/row picking and reason codes.
+3. Change to **Tear-Out** or **Planting** Gantt — Light/Medium/Heavy day cells.
+4. Switch back to **Labour (Weekly)** for submit.
 
 ### Step D — Notes and submit
 
-1. Scroll to **Labour Schedule Notes**.
+1. Open the **Notes & submit** accordion (or use the sticky **Submit Plan** button).
 2. Subject: `Crew availability`. Body: any short operational comment.
-3. Click **Save note**, then **Submit Schedule**.
-4. You should get a green success message and hours committed.
-
-Submit a second time on the same farm / week / activity. The app will ask for a **reason for change** before it saves (audit rule).
+3. Click **Save note**, then **Submit Plan**.
+4. You should get a success toast. Submit again on the same scope to see the **reason for change** dialog.
 
 ### Step E — Summary and notes drawer
 
-1. Open the **Summary** tab.
-2. Read the three KPI cards: Total planned hours, FTE, Unique activities.
-3. Change **Group by** to Farm, Commodity, Activity, Planner, and Horizon / week.
-4. Click **View Notes**. The drawer lists comments with author, timestamp, farm, activity, and week.
+1. Open the **Summary** tab. Sticky filters stay visible.
+2. Read the three KPI cards: FTE, Total Planned Hours, Unique Activities.
+3. Change **Group table by** (highlighted green control).
+4. Click **View Notes** / **@ Notes**. Analytics (charts) live in a collapsed accordion below.
 
-### Step F — Other roles
+### Step F — Map + other roles
 
-1. Log out. Sign in as **Site Manager** and stay on Summary (read-only).
-2. Log out. Sign in as **System Admin**.
-3. Open **Admin**: search Azure AD for `Priya`, provision her as a Farm Planner, then add or delete a farm in **Global Entity Management**.
+1. Open **Map View**, pick a farm, **Show map**.
+2. Log out. Sign in as **Site Manager** (Summary + Map only).
+3. Log out. Sign in as **System Admin** → **Admin**: search Azure AD for `Priya`, provision her as a Farm Planner. Sections open one-at-a-time in accordions.
 
 ---
 
 ## 5. Planner tab — what each control does
 
-### Planning horizon
+### Plan type
 
-- **Weekly** — default. Seven days, 6:00 AM–5:00 PM, in 30-minute slots. Use the arrows to change week.
-- **Monthly** — all 12 months in one budget grid (planned hours, rate / hr, planned budget) plus a consolidated budget plan. With **MINI / FRED / HARVEST** selected, a row-wise house grid replaces the old week×month hours grid.
-- **MINI / FRED / HARVEST** — house chips live in Planning Horizon (not a separate Greenhouse house section).
+| Plan type | What you get |
+|---|---|
+| **Labour (Weekly)** | Bi-weekly 14-day grid; expand an activity to paint 30-min slots. |
+| **Labour (Monthly Budget)** | Annual activity × month need / planned / people; rate $/hr. |
+| **Harvest (Weekly)** | Bay A/B rows, day tabs Mon–Sat, reason codes. |
+| **Tear-Out (Weekly Gantt)** | Task rows, crew, Light/Medium/Heavy day cells. |
+| **Planting (Weekly Gantt)** | Same Gantt pattern for planting. |
 
-Past dates in the weekly grid stay locked.
+Year and planning week appear when the plan type needs them. Past dates stay locked on weekly labour.
 
 ### Operational scope
 
 | Control | Behaviour |
 |---|---|
-| **Farm** | Limited to farms on your SSO profile. Changing farm resets commodity and activity. |
-| **Commodity** | Only crops grown at the selected farm. |
-| **Active Activity** | Required. The grid stays locked until you pick one. |
+| **Farm** | Limited to farms on your SSO profile. Map pin opens greenhouse layout. |
+| **Commodity** | Only crops grown at the selected farm (when the plan type needs it). |
+| **Activity rows** | On Labour Weekly, expand a row to paint; each activity is its own plan. |
 
-Each farm + commodity + activity combination is its own plan. Switching activity shows a different grid.
+### Hours + click-and-drag (Labour Weekly)
 
-### Number of people + click-and-drag
-
-1. Type a whole number (0 is allowed and clears cells as you drag).
+1. Expand an activity. Type a whole number for people (0 clears as you drag).
 2. Press on a cell and drag across others.
 3. Each filled slot = that many people for 30 minutes.
 
 **Hours for a cell** = people × 0.5  
 **Example:** 5 people across 6 slots = 15.0 hours
 
-### Recommendation banner
+### Notes and Submit Plan
 
-Shown after farm, commodity, and activity are selected. Values are a prototype of historic actuals (weeks 16–20, 60% recurrence).
-
-- **View Logic** — sample weekly averages
-- **Dismiss** — hide the banner for this selection
-- **Apply Recommendation** — fill unlocked (future) slots; you can still overwrite any cell
-
-### Notes and Submit Schedule
-
-- **Save note** stores the comment with your name and timestamp against farm, week, and activity.
-- **Submit Schedule** packages the grid as if it were posting to Azure SQL.
-- Empty grids cannot be submitted.
+- Sticky bar keeps **Submit Plan** one click away; notes sit in an accordion.
+- **Save note** stores the comment with your name and timestamp.
+- Empty labour grids cannot be submitted.
 - If the browser goes offline, Submit is disabled.
 
 ---
@@ -161,46 +155,54 @@ Use this as a manager or after you have submitted plans.
 
 | Area | What to try |
 |---|---|
-| **Time horizon** | Weekly / Monthly / Yearly — KPIs and the table follow the same period as Planner. |
+| **Sticky filters** | Time horizon (Weekly / Monthly / Yearly). Year is always available; Monthly also shows a month picker. |
 | **Filters** | Farm, commodity, activity, planner. **All** shows the full allowed scope. |
-| **Group by** | Rebuilds the table instantly. |
-| **KPI cards** | Hours, FTE (hours ÷ 40), unique activities. |
-| **View Notes** | Slide-out audit history. Does not leave the Summary screen. |
-| **Pie chart** | Planned hours allocation — share by the current Group by. |
-| **Bar graph** | Power BI planned (green) vs actual (orange) from Priva / Hortimax. |
+| **Group table by** | Detailed (default) or Farm / Commodity / Activity / Planner / Horizon. Highlighted green control. |
+| **KPI cards** | FTE (hours ÷ 40), planned hours, unique activities. |
+| **Table** | Period, Farm, Commodity, Activity, Planner, Planned / Actual hrs, **@ Notes**. |
+| **Analytics accordion** | Collapsed by default — Power BI–style pie + planned vs actual bars. |
 
 Farm Planners only see their assigned farms here. Site Managers and Admins see all farms.
 
 ---
 
-## 7. Admin tab (System Admin only)
+## 7. Map View tab
 
-### Provision User via SSO
-
-1. In **Directory email lookup**, type `priya`, `luis`, `emily`, `david`, or `hannah`.
-2. Click a match. **Full name** auto-fills.
-3. Choose a role. For **Farm Planner**, tick farms / commodities / activities.
-4. **Link & Save User**. They appear in the User Directory. **Cancel** clears the form.
-
-People already in the directory (Alex, Sarah, Jordan, Mike) will not appear in search.
-
-### User Directory
-
-- Filter by name or email.
-- **Edit** (pastel blue) — change role and farm scope.
-- **Delete** (pastel red) — confirm first. You cannot delete the user you are signed in as.
-
-### Global Entity Management
-
-Three cards: **Farms**, **Commodities**, **Activities**.
-
-- Type a name and press **+** or Enter to add.
-- **Delete** removes it from dropdowns.
-- On a farm, **Crops** sets which commodities that farm grows (this is what North Farm filtering uses).
+Pick a farm chip, then **Show map** for the greenhouse layout (MINI / FRED / HARVEST). Available to all signed-in roles.
 
 ---
 
-## 8. Business rules you will notice
+## 8. Admin tab (System Admin only)
+
+Sections open **one at a time** in accordions (less scroll).
+
+### Provision User via SSO
+
+1. Type `priya`, `luis`, `emily`, `david`, or `hannah` in directory lookup.
+2. Click a match. **Full name** auto-fills.
+3. Choose a role. For **Farm Planner**, assign farms / commodities / activities.
+4. **Link & Save User**. **Cancel** clears the form.
+
+### Planning report provisioning
+
+Each report can be Enabled/Disabled. Assign farms, commodities, and activities via lists.
+
+### Farm × day shift scheduler + guardrails
+
+Configure daily shifts per farm. Guardrails use logic-gate style conditions (metric, threshold, optional scope).
+
+### User Directory + Global Entity Management
+
+- Directory: filter, pastel **Edit** / **Delete** (cannot delete yourself).
+- Entities: Farms, Commodities, Activities — add, Edit rename, Delete. Farm **Crops** drives Planner commodity lists.
+
+### Speed calibration
+
+Minutes-per-row style calibration for activities.
+
+---
+
+## 9. Business rules you will notice
 
 | Rule | What happens |
 |---|---|
@@ -214,7 +216,7 @@ Three cards: **Farms**, **Commodities**, **Activities**.
 
 ---
 
-## 9. Sample data already in the prototype
+## 10. Sample data already in the prototype
 
 You do not start from a blank system.
 
@@ -227,29 +229,29 @@ You do not start from a blank system.
 - Sarah Johnson — Site Manager  
 - Mike Peterson — Farm Planner (Richmond, Morehead)
 
-Prior weeks already contain planned hours so Summary and Power BI are populated before you enter anything.
+Prior weeks already contain planned hours so Summary and charts are populated before you enter anything.
 
 ---
 
-## 10. If something looks wrong
+## 11. If something looks wrong
 
 | Issue | What to do |
 |---|---|
-| Grid will not accept clicks | Select an **Active Activity**. Check that the day is not in the past. |
+| Grid will not accept clicks | On Labour Weekly, expand an activity. Check that the day is not in the past. |
 | Commodity list looks “wrong” | Change **Farm** first. North Farm is the clean demo for crop filtering. |
 | No Admin tab | You are not signed in as System Admin. Log out and switch persona. |
 | Submit is greyed out | You are offline, or you are a Site Manager. |
-| Numbers look like an old session | **Exploration guide** → **Reset prototype data**, then sign in again. |
+| Numbers look like an old session | **Guide** → **Reset prototype data**, then sign in again. |
 | Want to start the 15-minute tour over | Reset, then sign in as Farm Planner and return to section 4. |
 
 ---
 
-## 11. What production will add later
+## 12. What production will add later
 
 This prototype is for look, flow, and rules — not go-live hosting.
 
-Still to connect in the real build: Azure AD SSO, Azure SQL persistence, live Priva / Hortimax feeds, and embedded Power BI reports inside Mastronardi’s tenant.
+Still to connect in the real build: Azure AD SSO, Azure SQL persistence, live Priva / Hortimax feeds, and embedded Power BI reports inside Mastronardi’s tenant (embed-ready under Sunset Grown).
 
 ---
 
-*Labour Planner · Augusta Hitech for Mastronardi Produce Farm Operations*
+*Labour Planner · Augusta Hitech for Mastronardi Produce / Sunset Grown*

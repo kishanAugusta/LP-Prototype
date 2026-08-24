@@ -19,6 +19,7 @@ export function MonthlyBudgetGrid() {
         hoursForWeek({
           cells: state.cells,
           farmId: state.farmId,
+          houseId: state.houseId,
           commodityId,
           activityIds,
           weekStart,

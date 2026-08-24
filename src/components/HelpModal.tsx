@@ -67,6 +67,10 @@ export function HelpModal() {
               onClick={() => {
                 localStorage.removeItem('labour-planner-prototype-v1')
                 localStorage.removeItem('labour-planner-prototype-v2')
+                localStorage.removeItem('labour-planner-prototype-v3')
+                localStorage.removeItem('labour-planner-prototype-v4')
+                localStorage.removeItem('labour-planner-prototype-v5')
+                localStorage.removeItem('labour-planner-prototype-v6')
                 window.location.reload()
               }}
               className="lp-btn-ghost px-4 py-2 text-xs"
@@ -168,19 +172,27 @@ function Planner() {
     <div className="space-y-3">
       <h4 className="text-base font-bold text-slate-900">Planner tab</h4>
       <p>
-        <strong>Weekly</strong> is the 6:00 AM–5:00 PM, 30-minute grid. <strong>Monthly</strong> shows
-        all 12 months with planned hours, rate / hr, and a consolidated budget plan. Selecting{' '}
-        <strong>MINI / FRED / HARVEST</strong> in Planning Horizon opens a row-wise selector for that
-        house (replacing the old week grid). Use <strong>Show maps</strong> after you pick a farm.
+        Sticky <strong>Plan type</strong> bar stays visible. Changing plan type swaps the whole
+        workspace (Labour weekly / monthly budget / Harvest / Tear-Out / Planting Gantt). Notes sit in
+        an accordion; <strong>Submit Plan</strong> stays one click away.
       </p>
+      <ul className="list-disc space-y-1 pl-5">
+        <li>
+          <strong>Labour (Weekly)</strong> — bi-weekly 14-day; expand an activity to paint slots.
+        </li>
+        <li>
+          <strong>Labour (Monthly Budget)</strong> — annual activity × month budget + rate $/hr.
+        </li>
+        <li>
+          <strong>Harvest (Weekly)</strong> — bay/row picking + reason codes in one filled panel.
+        </li>
+        <li>
+          <strong>Tear-Out / Planting Gantt</strong> — rows, crew, Light/Medium/Heavy day cells.
+        </li>
+      </ul>
       <p>
-        Farm is limited by your profile. Commodity is limited by the farm. The grid stays locked until
-        <strong> Active Activity</strong> is selected. Rate / hr calculates labour cost from planned
-        hours.
-      </p>
-      <p>
-        Hours per cell = people × 0.5. Footer totals and FTE (hours ÷ 40) update as you drag. Use 0
-        people and drag to clear cells.
+        Visual language aligns with <strong>Sunset Grown</strong> greens for future embed under the
+        parent brand site.
       </p>
     </div>
   )
@@ -191,15 +203,15 @@ function Summary() {
     <div className="space-y-3">
       <h4 className="text-base font-bold text-slate-900">Summary tab</h4>
       <p>
-        KPI cards show planned hours, FTE, and unique activities for the current horizon and filters.
-        Group by Farm, Commodity, Activity, Planner, or Horizon / week — the control is highlighted
-        in green. Monthly view includes a month and year picker. A planned-hours **pie chart** and a
-        planned-vs-actual **bar graph** sit below the table.
+        Sticky filters stay visible. KPI cards show FTE, planned hours, and unique activities.
+        <strong> Group table by</strong> (highlighted green) rebuilds the detailed table — Detailed,
+        Farm, Commodity, Activity, Planner, or Horizon. Monthly view includes a month and year
+        picker; Year is always available.
       </p>
       <p>
-        <strong>View Notes</strong> opens a side drawer with author, timestamp, farm, activity, and
-        week — you do not leave Summary. The pie shows share by Group by. The bar graph is a
-        prototype of planned (green) versus actual (orange).
+        <strong>View Notes</strong> / <strong>@ Notes</strong> opens a side drawer. Power BI–style
+        pie and planned-vs-actual bars sit in a collapsed <strong>Analytics</strong> accordion below
+        the table.
       </p>
     </div>
   )
@@ -217,15 +229,17 @@ function Admin() {
         </li>
         <li>User Directory: filter, pastel Edit, pastel Delete. You cannot delete yourself.</li>
         <li>
-          Entity cards: add/delete Farms, Commodities, Activities. On a farm, Crops controls which
-          commodities appear in Planner.
+          Entity cards: add, Edit (rename), and delete Farms, Commodities, Activities. On a farm,
+          Crops controls which commodities appear in Planner.
         </li>
         <li>
           Assign farm / commodity / activity is always visible on Provision User and on Edit.
         </li>
         <li>
-          Also: planning report provisioning, daily shift scheduler, operational guardrails, and
-          activity speed calibration (minutes per row).
+          Also: planning report provisioning (farms, commodities, activities per report), daily farm
+          shift scheduler, operational guardrails (add/edit conditions), and activity speed
+          calibration (minutes per row). Admin sections open one-at-a-time in accordions to reduce
+          scroll.
         </li>
       </ul>
     </div>

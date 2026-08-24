@@ -5,6 +5,7 @@ import type {
   Commodity,
   DirectoryPerson,
   Farm,
+  FarmDaySchedule,
   GreenhouseHouse,
   Guardrails,
   Note,
@@ -28,6 +29,8 @@ export const ALL_ACTIVITY_IDS = [
   'act-pruning',
   'act-scouting',
   'act-twisting',
+  'act-tearout',
+  'act-planting',
 ]
 
 export const commodities: Commodity[] = [
@@ -47,6 +50,8 @@ export const activities: Activity[] = [
   { id: 'act-pruning', name: 'Pruning' },
   { id: 'act-scouting', name: 'Scouting' },
   { id: 'act-twisting', name: 'Twisting' },
+  { id: 'act-tearout', name: 'Tear-out' },
+  { id: 'act-planting', name: 'Planting' },
 ]
 
 export const farms: Farm[] = [
@@ -167,11 +172,74 @@ export const greenhouseHouses: GreenhouseHouse[] = [
 ]
 
 export const seedGuardrails: Guardrails = {
-  maxHeadcountPerSlot: 12,
-  maxWeeklyHours: 400,
-  overtimeFteWarn: 1.25,
   enabled: true,
+  conditions: [
+    {
+      id: 'gr-slot',
+      name: 'Max people per slot',
+      metric: 'maxHeadcountPerSlot',
+      threshold: 12,
+      farmId: 'all',
+      activityId: 'all',
+      enabled: true,
+    },
+    {
+      id: 'gr-week',
+      name: 'Max weekly hours',
+      metric: 'maxWeeklyHours',
+      threshold: 400,
+      farmId: 'all',
+      activityId: 'all',
+      enabled: true,
+    },
+    {
+      id: 'gr-ot',
+      name: 'Overtime FTE warn',
+      metric: 'overtimeFteWarn',
+      threshold: 1.25,
+      farmId: 'all',
+      activityId: 'all',
+      enabled: true,
+    },
+  ],
+  logicGates: [
+    {
+      id: 'lg-1',
+      code: 'R-01',
+      activityId: 'act-twisting',
+      requirement: 'before',
+      buffer: '1week',
+      referenceEvent: 'Removing crop',
+    },
+    {
+      id: 'lg-2',
+      code: 'R-02',
+      activityId: 'act-tearout',
+      requirement: 'before',
+      buffer: 'immediately',
+      referenceEvent: 'Planting',
+    },
+    {
+      id: 'lg-3',
+      code: 'R-03',
+      activityId: 'act-scouting',
+      requirement: 'after',
+      buffer: '1day',
+      referenceEvent: 'Deleafing',
+    },
+  ],
 }
+
+export const seedFarmDaySchedules = (farmIds: string[]): FarmDaySchedule[] =>
+  farmIds.flatMap((farmId) =>
+    Array.from({ length: 7 }, (_, day) => ({
+      farmId,
+      day,
+      work: day >= 1 && day <= 6,
+      start: '06:00',
+      end: '16:00',
+    })),
+  )
 
 export const seedCalibrations: ActivityCalibration[] = [
   { activityId: 'act-clipping', minutesPerRow: 8 },
@@ -180,6 +248,8 @@ export const seedCalibrations: ActivityCalibration[] = [
   { activityId: 'act-pruning', minutesPerRow: 9 },
   { activityId: 'act-scouting', minutesPerRow: 6 },
   { activityId: 'act-twisting', minutesPerRow: 7 },
+  { activityId: 'act-tearout', minutesPerRow: 15 },
+  { activityId: 'act-planting', minutesPerRow: 11 },
 ]
 
 export const seedShifts = (): ShiftTemplate[] => [
@@ -188,11 +258,47 @@ export const seedShifts = (): ShiftTemplate[] => [
   { id: 'shift-pm', farmId: 'all', name: 'Afternoon', startSlot: 16, endSlot: 22, defaultHeadcount: 3 },
 ]
 
-export const seedReports = (farmIds: string[]): PlanningReport[] => [
-  { id: 'rep-weekly', name: 'Weekly planned hours', cadence: 'Weekly', enabled: true, farmIds },
-  { id: 'rep-fte', name: 'FTE by farm', cadence: 'Weekly', enabled: true, farmIds },
-  { id: 'rep-pva', name: 'Planned vs actual', cadence: 'Weekly', enabled: true, farmIds },
-  { id: 'rep-harvest', name: 'Harvest labour forecast', cadence: 'Monthly', enabled: false, farmIds },
+export const seedReports = (
+  farmIds: string[],
+  commodityIds: string[],
+  activityIds: string[],
+): PlanningReport[] => [
+  {
+    id: 'rep-weekly',
+    name: 'Weekly planned hours',
+    cadence: 'Weekly',
+    enabled: true,
+    farmIds,
+    commodityIds,
+    activityIds,
+  },
+  {
+    id: 'rep-fte',
+    name: 'FTE by farm',
+    cadence: 'Weekly',
+    enabled: true,
+    farmIds,
+    commodityIds,
+    activityIds,
+  },
+  {
+    id: 'rep-pva',
+    name: 'Planned vs actual',
+    cadence: 'Weekly',
+    enabled: true,
+    farmIds,
+    commodityIds,
+    activityIds,
+  },
+  {
+    id: 'rep-harvest',
+    name: 'Harvest labour forecast',
+    cadence: 'Monthly',
+    enabled: false,
+    farmIds,
+    commodityIds,
+    activityIds,
+  },
 ]
 
 export const loginOptions = [
@@ -204,6 +310,7 @@ export const loginOptions = [
 function fillPattern(
   cells: Record<string, Cell>,
   farmId: string,
+  houseId: string,
   commodityId: string,
   activityId: string,
   weekStart: Date,
@@ -215,9 +322,7 @@ function fillPattern(
     for (let slot = 0; slot < 22; slot++) {
       const hour = 6 + slot * 0.5
       const headcount = hour < 10 ? base : hour < 14 ? Math.max(1, base - 2) : Math.max(1, base - 3)
-      cells[
-        cellKey({ farmId, commodityId, activityId, date, slot })
-      ] = {
+      cells[cellKey({ farmId, houseId, commodityId, activityId, date, slot })] = {
         headcount,
         plannerId: planner.id,
         plannerName: planner.name,
@@ -234,14 +339,23 @@ export function seedCells(today = new Date()): Record<string, Cell> {
   const alex = demoUsers[1]
   const mike = demoUsers[3]
 
-  fillPattern(cells, 'farm-north', 'com-beef', 'act-clipping', lastMonday, alex, 6)
-  fillPattern(cells, 'farm-north', 'com-tov', 'act-deleafing', lastMonday, alex, 5)
-  fillPattern(cells, 'farm-maroa', 'com-beef', 'act-scouting', lastMonday, alex, 3)
-  fillPattern(cells, 'farm-ohio', 'com-strawberry', 'act-pruning', lastMonday, alex, 4)
-  fillPattern(cells, 'farm-richmond', 'com-campari', 'act-twisting', lastMonday, mike, 7)
-  fillPattern(cells, 'farm-north', 'com-beef', 'act-clipping', prevMonday, alex, 5)
-  fillPattern(cells, 'farm-morehead', 'com-tov', 'act-lowering', lastMonday, mike, 4)
-  fillPattern(cells, 'farm-north', 'com-beef', 'act-clipping', thisMonday, alex, 5)
+  // Distinct patterns per house so switching MINI / FRED / HARVEST changes the grid
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-beef', 'act-clipping', lastMonday, alex, 6)
+  fillPattern(cells, 'farm-north', 'house-fred', 'com-beef', 'act-clipping', lastMonday, alex, 4)
+  fillPattern(cells, 'farm-north', 'house-harvest', 'com-beef', 'act-clipping', lastMonday, alex, 8)
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-tov', 'act-deleafing', lastMonday, alex, 5)
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-beef', 'act-tearout', lastMonday, alex, 7)
+  fillPattern(cells, 'farm-north', 'house-fred', 'com-beef', 'act-planting', lastMonday, alex, 3)
+  fillPattern(cells, 'farm-maroa', 'house-mini', 'com-beef', 'act-scouting', lastMonday, alex, 3)
+  fillPattern(cells, 'farm-ohio', 'house-mini', 'com-strawberry', 'act-pruning', lastMonday, alex, 4)
+  fillPattern(cells, 'farm-richmond', 'house-harvest', 'com-campari', 'act-twisting', lastMonday, mike, 7)
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-beef', 'act-clipping', prevMonday, alex, 5)
+  fillPattern(cells, 'farm-morehead', 'house-fred', 'com-tov', 'act-lowering', lastMonday, mike, 4)
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-beef', 'act-clipping', thisMonday, alex, 5)
+  fillPattern(cells, 'farm-north', 'house-fred', 'com-beef', 'act-clipping', thisMonday, alex, 3)
+  fillPattern(cells, 'farm-north', 'house-harvest', 'com-beef', 'act-clipping', thisMonday, alex, 7)
+  fillPattern(cells, 'farm-north', 'house-mini', 'com-beef', 'act-planting', thisMonday, alex, 4)
+  fillPattern(cells, 'farm-north', 'house-harvest', 'com-beef', 'act-tearout', thisMonday, alex, 9)
   return cells
 }
 

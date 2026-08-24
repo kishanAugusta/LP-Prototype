@@ -1,8 +1,22 @@
 export type Role = 'admin' | 'planner' | 'manager'
 export type Horizon = 'weekly' | 'monthly' | 'yearly'
-export type Tab = 'planner' | 'summary' | 'admin'
-export type GroupBy = 'horizon' | 'planner' | 'farm' | 'commodity' | 'activity'
+export type Tab = 'planner' | 'summary' | 'admin' | 'map'
+export type GroupBy = 'detailed' | 'horizon' | 'planner' | 'farm' | 'commodity' | 'activity'
 export type HouseId = 'house-mini' | 'house-fred' | 'house-harvest'
+export type PlanType =
+  | 'labour-weekly'
+  | 'labour-monthly'
+  | 'harvest-weekly'
+  | 'tearout-gantt'
+  | 'planting-gantt'
+
+export const PLAN_TYPE_OPTIONS: { id: PlanType; label: string; group: string }[] = [
+  { id: 'labour-weekly', label: 'Labour (Weekly)', group: 'Labour Plans' },
+  { id: 'labour-monthly', label: 'Labour (Monthly Budget)', group: 'Labour Plans' },
+  { id: 'harvest-weekly', label: 'Harvest (Weekly)', group: 'Mini-FRED Harvest Plans' },
+  { id: 'tearout-gantt', label: 'Tear-Out (Weekly Gantt)', group: 'Tear-Out / Cleanout' },
+  { id: 'planting-gantt', label: 'Planting (Weekly Gantt)', group: 'Planting' },
+]
 
 export interface User {
   id: string
@@ -98,11 +112,43 @@ export interface ShiftTemplate {
   defaultHeadcount: number
 }
 
-export interface Guardrails {
-  maxHeadcountPerSlot: number
-  maxWeeklyHours: number
-  overtimeFteWarn: number
+export type GuardrailMetric = 'maxHeadcountPerSlot' | 'maxWeeklyHours' | 'overtimeFteWarn'
+
+export interface GuardrailCondition {
+  id: string
+  name: string
+  metric: GuardrailMetric
+  threshold: number
+  farmId: string
+  activityId: string
   enabled: boolean
+}
+
+export type LogicRequirement = 'before' | 'after'
+export type LogicBuffer = 'immediately' | '1day' | '1week' | '2weeks'
+
+export interface LogicGate {
+  id: string
+  code: string
+  activityId: string
+  requirement: LogicRequirement
+  buffer: LogicBuffer
+  referenceEvent: string
+}
+
+export interface Guardrails {
+  enabled: boolean
+  conditions: GuardrailCondition[]
+  logicGates: LogicGate[]
+}
+
+/** Per-farm daily work window (Admin shift scheduler). day: 0=Sun … 6=Sat */
+export interface FarmDaySchedule {
+  farmId: string
+  day: number
+  work: boolean
+  start: string
+  end: string
 }
 
 export interface ActivityCalibration {
@@ -116,4 +162,6 @@ export interface PlanningReport {
   cadence: string
   enabled: boolean
   farmIds: string[]
+  commodityIds: string[]
+  activityIds: string[]
 }
