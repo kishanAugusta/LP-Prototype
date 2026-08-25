@@ -178,10 +178,12 @@ function Planner() {
       </p>
       <ul className="list-disc space-y-1 pl-5">
         <li>
-          <strong>Labour (Weekly)</strong> — bi-weekly 14-day; expand an activity to paint slots.
+          <strong>Labour (Weekly)</strong> — bi-weekly 14-day; expand an activity, then click-drag to
+          paint. Use Erase, People = 0, or Clear activity to remove labour.
         </li>
         <li>
-          <strong>Labour (Monthly Budget)</strong> — annual activity × month budget + rate $/hr.
+          <strong>Labour (Monthly Budget)</strong> — enter people or planned hours per month; optional
+          annual activity × month detail in an accordion.
         </li>
         <li>
           <strong>Harvest (Weekly)</strong> — bay/row picking + reason codes in one filled panel.

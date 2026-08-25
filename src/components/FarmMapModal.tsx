@@ -21,7 +21,8 @@ export function FarmMapModal() {
       onClose={() => dispatch({ type: 'toggleMap', open: false })}
     >
       <p className="mb-3 text-xs text-slate-600">
-        Click a house to set MINI, FRED, or HARVEST in Planning Horizon.
+        Click a house block for location context on this farm map.
+
       </p>
       <svg viewBox="0 0 360 240" className="w-full rounded-[8px] border border-line bg-mist">
         <rect x="8" y="8" width="344" height="224" rx="8" fill="#eef4ef" stroke="#d4e2d8" />
@@ -75,7 +76,8 @@ export function FarmMapModal() {
       </svg>
       <p className="mt-3 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">
         <MapPin className="h-3.5 w-3.5" />
-        Selected house drives the weekly grid below.
+        Selected house is highlighted on the map.
+
       </p>
     </Modal>
   )

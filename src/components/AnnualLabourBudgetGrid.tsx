@@ -56,11 +56,13 @@ export function AnnualLabourBudgetGrid() {
   const peakIdx = monthCosts.indexOf(Math.max(...monthCosts))
 
   return (
-    <section className="lp-panel mb-0 p-3">
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h3 className="text-sm font-bold text-ink">Annual Labour Budget</h3>
-          <p className="text-[11px] text-slate-500">Need vs planned by activity × month.</p>
+          <p className="text-[11px] text-slate-500">
+            Need vs planned by activity × month. Edit hours or people in each cell.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <label className="font-semibold text-slate-500">
@@ -106,7 +108,7 @@ export function AnnualLabourBudgetGrid() {
                   {MONTHS.map((_, m) => {
                     const need = needHours(activity.id, m)
                     const plan = planned(activity.id, m)
-                    const ppl = Math.max(1, Math.round(plan / 160))
+                    const ppl = plan <= 0 ? 0 : Math.max(1, Math.round(plan / 160))
                     return (
                       <td key={m} className="border-l border-line p-1.5 text-center align-top">
                         <div className="text-[9px] text-slate-400">need {need}h</div>
@@ -114,16 +116,34 @@ export function AnnualLabourBudgetGrid() {
                           disabled={!canPlan}
                           value={String(plan)}
                           onChange={(e) => {
-                            if (!/^\d*$/.test(e.target.value)) return
+                            const v = e.target.value
+                            if (v !== '' && !/^\d*$/.test(v)) return
                             dispatch({
                               type: 'setMonthlyPlan',
                               key: planKey(activity.id, m),
-                              hours: Number(e.target.value || 0),
+                              hours: v === '' ? 0 : Number(v),
                             })
                           }}
                           className={`mt-0.5 w-14 rounded border px-1 py-0.5 text-center text-xs font-bold ${tone(plan, need)}`}
+                          title="Planned hours"
                         />
-                        <div className="mt-0.5 text-[9px] text-slate-500">{ppl} ppl</div>
+                        <input
+                          disabled={!canPlan}
+                          value={String(ppl)}
+                          onChange={(e) => {
+                            const v = e.target.value
+                            if (v !== '' && !/^\d*$/.test(v)) return
+                            const next = v === '' ? 0 : Number(v)
+                            dispatch({
+                              type: 'setMonthlyPlan',
+                              key: planKey(activity.id, m),
+                              hours: next * 160,
+                            })
+                          }}
+                          className="mt-0.5 w-14 rounded border border-line bg-white px-1 py-0.5 text-center text-[10px] font-bold text-slate-700"
+                          title="Labour count (people)"
+                        />
+                        <div className="text-[8px] text-slate-400">ppl</div>
                       </td>
                     )
                   })}
@@ -164,7 +184,7 @@ export function AnnualLabourBudgetGrid() {
           hint={`$${monthCosts[peakIdx].toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
         />
       </div>
-    </section>
+    </div>
   )
 }
 

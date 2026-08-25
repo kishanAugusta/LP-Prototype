@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Lock, MapPin } from 'lucide-react'
 import {
   formatWeekRange,
@@ -13,6 +13,7 @@ import { BiWeeklyLabourGrid } from './BiWeeklyLabourGrid'
 import { FarmMapModal } from './FarmMapModal'
 import { GanttPlanGrid } from './GanttPlanGrid'
 import { HarvestPlanGrid } from './HarvestPlanGrid'
+import { MonthlyBudgetGrid } from './MonthlyBudgetGrid'
 import { PLAN_TYPE_OPTIONS, type PlanType } from '../types'
 
 const GROUPS = [...new Set(PLAN_TYPE_OPTIONS.map((o) => o.group))]
@@ -23,10 +24,12 @@ export function PlannerTab() {
     dispatch,
     visibleFarms,
     farmCommodities,
+    farmActivities,
     canPlan,
   } = useStore()
   const [notesOpen, setNotesOpen] = useState(false)
-  const yearWeeks = useMemo(() => weeksInYear(state.year), [state.year])
+  const [annualOpen, setAnnualOpen] = useState(false)
+  const yearWeeks = weeksInYear(state.year)
   const showWeek = state.planType !== 'labour-monthly'
   const showCommodity =
     state.planType === 'labour-weekly' ||
@@ -132,13 +135,77 @@ export function PlannerTab() {
             </Field>
           )}
         </div>
+
+        {state.planType === 'labour-monthly' && (
+          <div className="mt-2 flex flex-wrap items-end gap-3 border-t border-line/80 pt-2">
+            <Field label="Active activity">
+              <select
+                value={state.activityId}
+                onChange={(e) => dispatch({ type: 'setActivity', activityId: e.target.value })}
+                className="lp-select min-w-[10rem] px-2.5 py-1.5 text-sm"
+              >
+                <option value="">Select activity…</option>
+                {farmActivities.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="People">
+              <input
+                type="text"
+                inputMode="numeric"
+                disabled={!canPlan}
+                value={String(state.people)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === '') {
+                    dispatch({ type: 'setPeople', people: 0 })
+                    return
+                  }
+                  if (!/^\d+$/.test(v)) return
+                  dispatch({ type: 'setPeople', people: Number(v) })
+                }}
+                className="lp-input w-16 px-2.5 py-1.5 text-sm font-bold"
+              />
+            </Field>
+            <Field label="Rate / hr ($)">
+              <input
+                type="text"
+                inputMode="decimal"
+                disabled={!canPlan}
+                value={String(state.ratePerHour)}
+                onChange={(e) => {
+                  const v = e.target.value
+                  if (v === '' || /^\d*\.?\d{0,2}$/.test(v)) {
+                    dispatch({ type: 'setRate', ratePerHour: Number(v || 0) })
+                  }
+                }}
+                className="lp-input w-16 px-2.5 py-1.5 text-sm font-bold"
+              />
+            </Field>
+          </div>
+        )}
       </div>
 
       <FarmMapModal />
 
-      <div className="lp-workspace-main min-h-0">
+      <div className="lp-workspace-main min-h-0 space-y-3">
         {state.planType === 'labour-weekly' && <BiWeeklyLabourGrid />}
-        {state.planType === 'labour-monthly' && <AnnualLabourBudgetGrid />}
+        {state.planType === 'labour-monthly' && (
+          <>
+            <MonthlyBudgetGrid />
+            <Accordion
+              id="annual-activity-budget"
+              title="Annual activity × month detail"
+              open={annualOpen}
+              onToggle={() => setAnnualOpen((v) => !v)}
+            >
+              <AnnualLabourBudgetGrid />
+            </Accordion>
+          </>
+        )}
         {state.planType === 'harvest-weekly' && <HarvestPlanGrid />}
         {state.planType === 'tearout-gantt' && <GanttPlanGrid planType="tearout-gantt" />}
         {state.planType === 'planting-gantt' && <GanttPlanGrid planType="planting-gantt" />}

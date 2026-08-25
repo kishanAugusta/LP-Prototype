@@ -145,6 +145,12 @@ type Action =
   | { type: 'cycleGanttDay'; key: string }
   | { type: 'setMonthlyPlan'; key: string; hours: number }
   | { type: 'fillCells'; dates: string[]; slots: number[]; activityId?: string }
+  | {
+      type: 'clearCells'
+      dates: string[]
+      slots?: number[]
+      activityId?: string
+    }
   | { type: 'applyShift'; shiftId: string }
   | { type: 'applyRecommendation' }
   | { type: 'dismissRec' }
@@ -528,6 +534,28 @@ function reducer(state: AppState, action: Action): AppState {
             message: `Max ${maxSlot} people per slot. Extra headcount was capped.`,
           })
         : next
+    }
+    case 'clearCells': {
+      const user = currentUser(state)
+      const activityId = action.activityId ?? state.activityId
+      if (!user || user.role === 'manager' || !activityId) return state
+      const slots =
+        action.slots ?? Array.from({ length: SLOT_COUNT }, (_, i) => i)
+      const cells = { ...state.cells }
+      for (const date of action.dates) {
+        for (const slot of slots) {
+          const key = cellKey({
+            farmId: state.farmId,
+            houseId: state.houseId,
+            commodityId: state.commodityId,
+            activityId,
+            date,
+            slot,
+          })
+          delete cells[key]
+        }
+      }
+      return { ...state, cells, activityId }
     }
     case 'applyShift': {
       const user = currentUser(state)

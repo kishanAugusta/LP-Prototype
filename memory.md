@@ -122,9 +122,9 @@ Sticky filter bar. **Plan type** swaps the whole workspace:
 
 | Plan type | Grid |
 |---|---|
-| Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
-| Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr |
-| Harvest (Weekly) | Bay A/B row picker, day tabs Mon–Sat, reason codes |
+| Labour (Weekly) | Bi-weekly 14-day; expand activity rows; **click-drag** paint; Erase / People=0 / Clear activity |
+| Labour (Monthly Budget) | Editable monthly hours+people; annual activity×month detail accordion |
+| Harvest (Weekly) | Bay A (46–96) then Bay B (1–45); tall columns with 3 dots; compact scrollable reason codes |
 | Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
 
@@ -136,13 +136,13 @@ Past dates stay locked in weekly labour slots.
 
 ### Operational scope (cascading filters)
 
-1. **Farm** — limited to the user’s allowed farms. **Show maps** opens the greenhouse layout (MINI / FRED / HARVEST). Changing farm resets commodity to that farm’s first crop and **clears activity**.
+1. **Farm** — limited to the user’s allowed farms. **Show maps** opens the greenhouse layout for location context. Changing farm resets commodity to that farm’s first crop and **clears activity**.
 2. **Commodity** — only crops grown at the selected farm, further limited by the planner’s assigned commodities.
-3. **Active Activity** — required. The grid stays locked until one is picked. Also limited by the planner’s assigned activities.
+3. **Active Activity** — required for weekly paint / monthly detail. Also limited by the planner’s assigned activities.
 
-**Rate / hr ($)** next to headcount. Footer shows labour cost = hours × rate, and estimated rows from Admin speed calibration.
+**Rate / hr ($)** next to headcount on monthly. Footer shows labour cost = hours × rate.
 
-Each **farm + house + commodity + activity** combination is its own plan. Switching MINI / FRED / HARVEST or activity (including Tear-out / Planting) shows a different grid.
+Each **farm + commodity + activity** combination is its own plan. (No Planner house chips — MINI / FRED / HARVEST removed from the sticky bar.)
 
 **North Farm demo crop filter:** Beef, TOV, Campari only (not Strawberry, Lettuce, Peppers, Snacks).
 
@@ -254,7 +254,7 @@ Farm Planners only see their assigned farms’ data. Site Managers and Admins se
 |---|---|
 | Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
 | Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr; KPIs |
-| Harvest (Weekly) | Bay A/B row picker, day tabs Mon–Sat, reason codes |
+| Harvest (Weekly) | Bay A (46–96) then Bay B (1–45); tall columns with 3 dots; compact scrollable reason codes |
 | Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
 

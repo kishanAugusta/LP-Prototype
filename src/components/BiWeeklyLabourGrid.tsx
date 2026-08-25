@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ChevronRight, Layers } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ChevronRight, Eraser, Layers, Paintbrush } from 'lucide-react'
 import {
   biWeekDates,
   hoursFromHeadcount,
@@ -23,8 +23,10 @@ const LABOUR_ACTIVITY_IDS = [
 export function BiWeeklyLabourGrid() {
   const { state, dispatch, farmActivities, canPlan } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [eraseMode, setEraseMode] = useState(false)
   const weekStart = new Date(state.weekStartISO + 'T00:00:00')
   const dates = biWeekDates(weekStart)
+  const dateISOs = dates.map(toISODate)
   const activities = farmActivities.filter((a) => LABOUR_ACTIVITY_IDS.includes(a.id))
 
   function dayHours(activityId: string, date: string): number {
@@ -38,7 +40,20 @@ export function BiWeeklyLabourGrid() {
 
   function paint(activityId: string, date: string, slot: number) {
     if (!canPlan || isPastDay(date)) return
+    if (eraseMode || state.people === 0) {
+      dispatch({ type: 'clearCells', dates: [date], slots: [slot], activityId })
+      return
+    }
     dispatch({ type: 'fillCells', dates: [date], slots: [slot], activityId })
+  }
+
+  function clearExpanded() {
+    if (!canPlan || !expandedId) return
+    dispatch({
+      type: 'clearCells',
+      dates: dateISOs.filter((d) => !isPastDay(d)),
+      activityId: expandedId,
+    })
   }
 
   const dayTotals = dates.map((d) => {
@@ -56,7 +71,7 @@ export function BiWeeklyLabourGrid() {
             type="text"
             inputMode="numeric"
             value={String(state.people)}
-            disabled={!canPlan}
+            disabled={!canPlan || eraseMode}
             onChange={(e) => {
               const v = e.target.value
               if (v === '') {
@@ -68,7 +83,45 @@ export function BiWeeklyLabourGrid() {
             }}
             className="lp-input w-14 px-2 py-1 text-sm"
           />
-          <span className="text-[11px] text-slate-500">Expand an activity to paint slots.</span>
+          <button
+            type="button"
+            disabled={!canPlan}
+            onClick={() => {
+              setEraseMode(false)
+              dispatch({ type: 'setPeople', people: 0 })
+            }}
+            className={`lp-btn-ghost px-2.5 py-1 text-[11px] ${state.people === 0 && !eraseMode ? 'border-brand text-brand' : ''}`}
+            title="Set people to 0, then drag to erase"
+          >
+            0 = erase
+          </button>
+          <button
+            type="button"
+            disabled={!canPlan}
+            onClick={() => setEraseMode((v) => !v)}
+            className={`flex items-center gap-1 rounded-[8px] border px-2.5 py-1 text-[11px] font-bold ${
+              eraseMode
+                ? 'border-rose-300 bg-rose-50 text-rose-700'
+                : 'border-line bg-white text-slate-600 hover:bg-mist'
+            }`}
+          >
+            {eraseMode ? <Eraser className="h-3.5 w-3.5" /> : <Paintbrush className="h-3.5 w-3.5" />}
+            {eraseMode ? 'Erasing' : 'Paint'}
+          </button>
+          <button
+            type="button"
+            disabled={!canPlan || !expandedId}
+            onClick={clearExpanded}
+            className="lp-btn-ghost flex items-center gap-1 px-2.5 py-1 text-[11px] disabled:opacity-40"
+            title="Clear all unlocked slots for the expanded activity"
+          >
+            <Eraser className="h-3.5 w-3.5" />
+            Clear activity
+          </button>
+          <span className="text-[11px] text-slate-500">
+            Expand an activity, then click-drag across cells.
+            {eraseMode || state.people === 0 ? ' Erase mode on.' : ''}
+          </span>
         </div>
         <span className="rounded-[8px] bg-navy px-2.5 py-1 text-[10px] font-bold text-white">
           Bi-Weekly 14-Day
@@ -76,7 +129,7 @@ export function BiWeeklyLabourGrid() {
       </div>
 
       <div className="custom-scroll max-h-[min(58vh,520px)] overflow-auto rounded-[8px] border border-line">
-        <table className="w-full min-w-[980px] border-collapse text-[11px]">
+        <table className="w-full min-w-[980px] border-collapse grid-select-none text-[11px]">
           <thead className="sticky top-0 z-10 bg-navy text-white">
             <tr>
               <th className="sticky left-0 z-20 bg-navy p-2 text-left font-bold uppercase">Time</th>
@@ -105,12 +158,12 @@ export function BiWeeklyLabourGrid() {
                   dates={dates}
                   dayHours={(date) => dayHours(activity.id, date)}
                   canPlan={canPlan}
-                  people={state.people}
                   activityId={activity.id}
                   farmId={state.farmId}
                   houseId={state.houseId}
                   commodityId={state.commodityId}
                   cells={state.cells}
+                  eraseMode={eraseMode || state.people === 0}
                   onPaint={(date, slot) => paint(activity.id, date, slot)}
                 />
               )
@@ -129,7 +182,10 @@ export function BiWeeklyLabourGrid() {
         </table>
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-        <span>14-Day bi-weekly schedule. Click an activity bar to expand and drag across cells.</span>
+        <span>
+          Drag across unlocked cells to paint headcount. Use Erase / People = 0 / Clear activity to remove
+          labour.
+        </span>
         <span className="font-bold text-ink">
           Grand Total Hours: <span className="text-brand">{grand.toFixed(1)}</span>
         </span>
@@ -150,6 +206,7 @@ function ActivityBlock({
   houseId,
   commodityId,
   cells,
+  eraseMode,
   onPaint,
 }: {
   name: string
@@ -158,14 +215,28 @@ function ActivityBlock({
   dates: Date[]
   dayHours: (date: string) => number
   canPlan: boolean
-  people: number
   activityId: string
   farmId: string
   houseId: string
   commodityId: string
   cells: Record<string, { headcount: number }>
+  eraseMode: boolean
   onPaint: (date: string, slot: number) => void
 }) {
+  const dragging = useRef(false)
+
+  useEffect(() => {
+    const stop = () => {
+      dragging.current = false
+    }
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
+    return () => {
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+  }, [])
+
   return (
     <>
       <tr className="border-b border-line bg-white hover:bg-green-50/40">
@@ -206,13 +277,24 @@ function ActivityBlock({
                   <button
                     type="button"
                     disabled={!canPlan || locked}
-                    onClick={() => onPaint(date, slot)}
-                    className={`flex h-7 w-full items-center justify-center rounded text-[10px] font-bold ${
+                    onPointerDown={(e) => {
+                      e.preventDefault()
+                      dragging.current = true
+                      onPaint(date, slot)
+                    }}
+                    onPointerEnter={() => {
+                      if (dragging.current) onPaint(date, slot)
+                    }}
+                    className={`flex h-7 w-full touch-none items-center justify-center rounded text-[10px] font-bold ${
                       locked
                         ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                        : head
-                          ? 'bg-brand text-white'
-                          : 'bg-white text-slate-300 hover:bg-green-50'
+                        : eraseMode
+                          ? head
+                            ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-200'
+                            : 'bg-white text-slate-300 hover:bg-rose-50'
+                          : head
+                            ? 'bg-brand text-white'
+                            : 'bg-white text-slate-300 hover:bg-green-50'
                     }`}
                   >
                     {head || ''}
