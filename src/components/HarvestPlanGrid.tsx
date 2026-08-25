@@ -1,5 +1,5 @@
 import { Check, Eraser, Search, Trash2, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { weekKeyFromDate } from '../lib/time'
 import { useStore } from '../store/AppContext'
 
@@ -20,8 +20,26 @@ const REASON_CODES = Array.from({ length: 24 }, (_, i) => ({
 export function HarvestPlanGrid() {
   const { state, dispatch, canPlan } = useStore()
   const [query, setQuery] = useState('')
-  const [selectedCodes, setSelectedCodes] = useState<string[]>([])
+  /** Selected ST.RM codes → free-text reason (user-typed, not predefined). */
+  const [selectedReasons, setSelectedReasons] = useState<Record<string, string>>({})
   const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
+
+  const selectedCodes = Object.keys(selectedReasons)
+
+  function toggleCode(id: string) {
+    setSelectedReasons((prev) => {
+      if (id in prev) {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      }
+      return { ...prev, [id]: '' }
+    })
+  }
+
+  function setReasonText(id: string, text: string) {
+    setSelectedReasons((prev) => (id in prev ? { ...prev, [id]: text } : prev))
+  }
 
   function rowKey(row: number) {
     return `${state.farmId}|${weekKey}|${state.harvestDay}|${row}`
@@ -31,18 +49,18 @@ export function HarvestPlanGrid() {
     return Boolean(state.harvestPicks[rowKey(row)])
   }
 
-  function toggleRow(row: number) {
+  function setRow(row: number, on: boolean) {
     if (!canPlan || WALKWAYS.has(row)) return
-    dispatch({ type: 'toggleHarvestRow', rowId: String(row) })
+    const currently = isOn(row)
+    if (currently === on) return
+    dispatch({ type: 'setHarvestRow', rowId: String(row), on })
   }
 
   function setBay(rows: number[], on: boolean) {
     if (!canPlan) return
     for (const row of rows) {
       if (WALKWAYS.has(row)) continue
-      const key = rowKey(row)
-      const currently = Boolean(state.harvestPicks[key])
-      if (on !== currently) dispatch({ type: 'toggleHarvestRow', rowId: String(row) })
+      setRow(row, on)
     }
   }
 
@@ -56,7 +74,7 @@ export function HarvestPlanGrid() {
   const codes = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (!q) return REASON_CODES
-    return REASON_CODES.filter((c) => c.id.toLowerCase().includes(q) || c.label.toLowerCase().includes(q))
+    return REASON_CODES.filter((c) => c.id.toLowerCase().includes(q))
   }, [query])
 
   return (
@@ -81,6 +99,7 @@ export function HarvestPlanGrid() {
             <Check className="h-3.5 w-3.5 text-brand" />
             {selectedToday} rows selected
           </span>
+          <span className="hidden text-[10px] text-slate-500 sm:inline">Drag across rows to select</span>
           <button
             type="button"
             disabled={!canPlan}
@@ -104,12 +123,11 @@ export function HarvestPlanGrid() {
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_15rem]">
         <div className="flex min-h-0 flex-col gap-2">
-          {/* Bay A (46–96) on top, then Bay B (1–45) */}
           <Bay
             title="Bay A — North"
             rows={BAY_A}
             isOn={isOn}
-            onToggle={toggleRow}
+            onPaint={setRow}
             onAll={(on) => setBay(BAY_A, on)}
             canPlan={canPlan}
           />
@@ -117,71 +135,115 @@ export function HarvestPlanGrid() {
             title="Bay B — South"
             rows={BAY_B}
             isOn={isOn}
-            onToggle={toggleRow}
+            onPaint={setRow}
             onAll={(on) => setBay(BAY_B, on)}
             canPlan={canPlan}
           />
 
-          {/* Compact reasons: ~1/3 prior height, internal scroll */}
-          <div className="flex h-52 flex-col overflow-hidden rounded-[8px] border border-line bg-mist/40">
-            <div className="flex shrink-0 items-center gap-2 border-b border-line px-2.5 py-1.5">
+          {/* Two-pane reasons: codes | selected + free-text input */}
+          <div className="flex h-52 flex-col overflow-hidden rounded-[8px] border border-line bg-white">
+            <div className="flex shrink-0 items-center gap-2 border-b border-line bg-mist/40 px-2.5 py-1.5">
               <X className="h-3.5 w-3.5 shrink-0 text-rose-500" />
               <h3 className="text-[11px] font-bold tracking-wide text-ink uppercase">
                 Reason for Not Picking
               </h3>
-              {selectedCodes.length > 0 && (
-                <span className="ml-auto rounded bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold text-brand">
-                  {selectedCodes.length} selected
-                </span>
-              )}
             </div>
-            <div className="relative shrink-0 border-b border-line px-2 py-1.5">
-              <Search className="absolute top-1/2 left-3.5 h-3 w-3 -translate-y-1/2 text-slate-400" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search reason codes…"
-                className="lp-input w-full py-1 pr-2 pl-7 text-[11px]"
-              />
-            </div>
-            <div className="custom-scroll min-h-0 flex-1 overflow-y-auto px-1.5 py-1">
-              <div className="space-y-0.5">
-                {codes.map((c) => {
-                  const on = selectedCodes.includes(c.id)
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() =>
-                        setSelectedCodes((prev) =>
-                          on ? prev.filter((x) => x !== c.id) : [...prev, c.id],
-                        )
-                      }
-                      className={`flex w-full items-center justify-between rounded px-2 py-1 text-left text-[10px] ${
-                        on ? 'bg-green-50 font-bold text-green-800' : 'hover:bg-white'
-                      }`}
-                    >
-                      <span className="tabular-nums">{c.id}</span>
-                      <span className="text-slate-400">{c.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              {selectedCodes.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap gap-1 border-t border-line pt-1.5">
-                  {selectedCodes.map((id) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setSelectedCodes((prev) => prev.filter((x) => x !== id))}
-                      className="rounded border border-line bg-white px-1.5 py-0.5 text-[9px] font-bold text-ink hover:border-rose-200 hover:text-rose-700"
-                      title="Remove"
-                    >
-                      {id} ×
-                    </button>
-                  ))}
+            <div className="grid min-h-0 flex-1 grid-cols-1 sm:grid-cols-2">
+              <div className="flex min-h-0 flex-col border-b border-line sm:border-r sm:border-b-0">
+                <div className="relative shrink-0 border-b border-line px-2 py-1.5">
+                  <Search className="absolute top-1/2 left-3.5 h-3 w-3 -translate-y-1/2 text-slate-400" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search ST.RM codes…"
+                    className="lp-input w-full py-1 pr-2 pl-7 text-[11px]"
+                  />
                 </div>
-              )}
+                <p className="shrink-0 border-b border-line bg-mist/30 px-2.5 py-1 text-[9px] font-bold tracking-wide text-slate-400 uppercase">
+                  Reason codes
+                </p>
+                <div className="custom-scroll min-h-0 flex-1 overflow-y-auto">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="sticky top-0 bg-mist text-[9px] text-slate-400 uppercase">
+                      <tr>
+                        <th className="px-2.5 py-1 font-bold">Code</th>
+                        <th className="w-8 px-1 py-1" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {codes.map((c) => {
+                        const on = c.id in selectedReasons
+                        return (
+                          <tr key={c.id}>
+                            <td className="p-0" colSpan={2}>
+                              <button
+                                type="button"
+                                onClick={() => toggleCode(c.id)}
+                                className={`flex w-full items-center justify-between px-2.5 py-1.5 text-left tabular-nums ${
+                                  on
+                                    ? 'bg-green-50 font-bold text-green-800'
+                                    : 'text-ink hover:bg-mist'
+                                }`}
+                              >
+                                <span>{c.id}</span>
+                                {on && <Check className="h-3.5 w-3.5 shrink-0 text-brand" />}
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="shrink-0 border-t border-line px-2.5 py-1 text-[9px] text-slate-400">
+                  {REASON_CODES.length} codes
+                </p>
+              </div>
+              <div className="flex min-h-0 flex-col">
+                <p className="shrink-0 border-b border-line bg-mist/30 px-2.5 py-1.5 text-[9px] font-bold tracking-wide text-slate-400 uppercase">
+                  Selected varieties &amp; reasons
+                  {selectedCodes.length > 0 && (
+                    <span className="ml-1 rounded bg-brand/15 px-1.5 py-0.5 text-[9px] font-bold text-brand normal-case tracking-normal">
+                      {selectedCodes.length}
+                    </span>
+                  )}
+                </p>
+                <div className="custom-scroll min-h-0 flex-1 overflow-y-auto p-2">
+                  {selectedCodes.length === 0 ? (
+                    <p className="px-1 py-4 text-center text-[11px] text-slate-500">
+                      Select codes on the left. Type your reason in the input on each row.
+                    </p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {selectedCodes.map((id) => (
+                        <li
+                          key={id}
+                          className="flex items-center gap-2 rounded border border-line bg-white px-2 py-1.5"
+                        >
+                          <span className="shrink-0 text-[10px] font-bold tabular-nums text-ink">
+                            {id}
+                          </span>
+                          <input
+                            type="text"
+                            value={selectedReasons[id] ?? ''}
+                            onChange={(e) => setReasonText(id, e.target.value)}
+                            placeholder="Reason for Not Picking…"
+                            className="lp-input min-w-0 flex-1 px-2 py-1 text-[11px]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleCode(id)}
+                            className="shrink-0 rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                            title="Remove"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -235,7 +297,7 @@ export function HarvestPlanGrid() {
           <div className="rounded-[8px] border border-line bg-green-50/60 p-3 text-[11px] text-slate-600">
             <p className="font-bold text-navy">Day tip</p>
             <p className="mt-1 leading-relaxed">
-              Tap a row column to schedule picking for{' '}
+              Click or drag across row columns to schedule picking for{' '}
               <span className="font-bold text-ink">{DAYS[state.harvestDay]}</span>. Use reason codes
               below for rows you skip.
             </p>
@@ -253,19 +315,34 @@ function Bay({
   title,
   rows,
   isOn,
-  onToggle,
+  onPaint,
   onAll,
   canPlan,
 }: {
   title: string
   rows: number[]
   isOn: (row: number) => boolean
-  onToggle: (row: number) => void
+  onPaint: (row: number, on: boolean) => void
   onAll: (on: boolean) => void
   canPlan: boolean
 }) {
+  const dragging = useRef(false)
+  const paintOn = useRef(true)
   const selectable = rows.filter((r) => !WALKWAYS.has(r))
   const allOn = selectable.length > 0 && selectable.every(isOn)
+
+  useEffect(() => {
+    const stop = () => {
+      dragging.current = false
+    }
+    window.addEventListener('pointerup', stop)
+    window.addEventListener('pointercancel', stop)
+    return () => {
+      window.removeEventListener('pointerup', stop)
+      window.removeEventListener('pointercancel', stop)
+    }
+  }, [])
+
   return (
     <div className="rounded-[8px] border border-line px-2.5 py-2">
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -282,7 +359,7 @@ function Bay({
           <span className="text-slate-400">{selectable.length} rows</span>
         </div>
       </div>
-      <div className="custom-scroll flex gap-0.5 overflow-x-auto pb-1">
+      <div className="custom-scroll grid-select-none flex gap-0.5 overflow-x-auto pb-1">
         {rows.map((row) => {
           const walk = WALKWAYS.has(row)
           const on = isOn(row)
@@ -292,8 +369,23 @@ function Bay({
               type="button"
               title={walk ? `Walkway ${row}` : `Row ${row}`}
               disabled={!canPlan || walk}
-              onClick={() => onToggle(row)}
-              className={`flex w-5 shrink-0 flex-col items-center disabled:cursor-default ${
+              onPointerDown={(e) => {
+                if (walk || !canPlan) return
+                e.preventDefault()
+                dragging.current = true
+                paintOn.current = !on
+                onPaint(row, paintOn.current)
+              }}
+              onPointerEnter={() => {
+                if (!dragging.current || walk || !canPlan) return
+                onPaint(row, paintOn.current)
+              }}
+              onClick={(e) => {
+                // Pointer down already painted; avoid double-toggle on click
+                if (walk) return
+                e.preventDefault()
+              }}
+              className={`flex w-5 shrink-0 touch-none flex-col items-center disabled:cursor-default ${
                 walk ? '' : 'hover:opacity-90'
               }`}
             >

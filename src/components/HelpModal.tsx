@@ -189,7 +189,8 @@ function Planner() {
           <strong>Harvest (Weekly)</strong> — bay/row picking + reason codes in one filled panel.
         </li>
         <li>
-          <strong>Tear-Out / Planting Gantt</strong> — rows, crew, Light/Medium/Heavy day cells.
+          <strong>Tear-Out / Planting Gantt</strong> — rows, crew, day cells show intensity{' '}
+          <strong>1 / 2 / 3</strong> (Light / Medium / Heavy).
         </li>
       </ul>
       <p>

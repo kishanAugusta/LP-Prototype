@@ -139,6 +139,7 @@ type Action =
   | { type: 'shiftMonth'; delta: number }
   | { type: 'setHarvestDay'; day: number }
   | { type: 'toggleHarvestRow'; rowId: string }
+  | { type: 'setHarvestRow'; rowId: string; on: boolean }
   | { type: 'clearHarvestDay' }
   | { type: 'clearHarvestWeek' }
   | { type: 'setGanttMeta'; key: string; rows: number; crew: number }
@@ -371,6 +372,14 @@ function reducer(state: AppState, action: Action): AppState {
       const harvestPicks = { ...state.harvestPicks }
       if (harvestPicks[key]) delete harvestPicks[key]
       else harvestPicks[key] = true
+      return { ...state, harvestPicks }
+    }
+    case 'setHarvestRow': {
+      if (!canEditPlan(state)) return state
+      const key = harvestKey(state, action.rowId)
+      const harvestPicks = { ...state.harvestPicks }
+      if (action.on) harvestPicks[key] = true
+      else delete harvestPicks[key]
       return { ...state, harvestPicks }
     }
     case 'clearHarvestDay': {

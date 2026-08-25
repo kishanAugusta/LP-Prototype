@@ -81,13 +81,13 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
             <h3 className="text-sm font-bold text-ink">{title}</h3>
           </div>
           <p className="mt-0.5 text-[11px] text-slate-500">
-            Rows & crew · click days (Light → Medium → Heavy). Hours from calibration.
+            Rows & crew · click days to cycle intensity (1 → 2 → 3). Hours from calibration.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-[10px] font-bold">
-          <span className="rounded bg-green-100 px-2 py-1 text-green-800">Light</span>
-          <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">Medium</span>
-          <span className="rounded bg-rose-100 px-2 py-1 text-rose-800">Heavy</span>
+          <span className="rounded bg-green-100 px-2 py-1 text-green-800">1 Light</span>
+          <span className="rounded bg-amber-100 px-2 py-1 text-amber-800">2 Medium</span>
+          <span className="rounded bg-rose-100 px-2 py-1 text-rose-800">3 Heavy</span>
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                               : 'bg-white text-slate-300 hover:bg-green-50'
                           }`}
                         >
-                          {intensity ? (intensity === 1 ? 'L' : intensity === 2 ? 'M' : 'H') : ''}
+                          {intensity ? intensity : ''}
                         </button>
                       </td>
                     )

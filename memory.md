@@ -124,8 +124,8 @@ Sticky filter bar. **Plan type** swaps the whole workspace:
 |---|---|
 | Labour (Weekly) | Bi-weekly 14-day; expand activity rows; **click-drag** paint; Erase / People=0 / Clear activity |
 | Labour (Monthly Budget) | Editable monthly hours+people; annual activity×month detail accordion |
-| Harvest (Weekly) | Bay A (46–96) then Bay B (1–45); tall columns with 3 dots; compact scrollable reason codes |
-| Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
+| Harvest (Weekly) | Bay A then Bay B; drag-to-select; 3-dot columns; reasons = codes | selected panes |
+| Tear-Out (Weekly Gantt) | Task rows + crew + day intensity **1 / 2 / 3** (not L/M/H) |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
 
 - Year selector: **2025, 2026, 2027**. Planning week when the plan type needs it.
@@ -254,8 +254,8 @@ Farm Planners only see their assigned farms’ data. Site Managers and Admins se
 |---|---|
 | Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
 | Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr; KPIs |
-| Harvest (Weekly) | Bay A (46–96) then Bay B (1–45); tall columns with 3 dots; compact scrollable reason codes |
-| Tear-Out (Weekly Gantt) | Task rows + crew + Light/Medium/Heavy day cells |
+| Harvest (Weekly) | Bay A then Bay B; drag-to-select; 3-dot columns; reasons = codes | selected panes |
+| Tear-Out (Weekly Gantt) | Task rows + crew + day intensity **1 / 2 / 3** (not L/M/H) |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
 
 Also: **Map View** tab, Year + Planning week dropdowns, Farm/Commodity scope only as needed.
