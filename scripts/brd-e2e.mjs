@@ -229,7 +229,7 @@ async function main() {
     record('BR-002', 'Reason for change on resubmit', 'PASS', 'reasonOpen modal when submission key exists')
     record('BR-005', 'Overwrite after recommendation', 'PASS', 'fillCells still paints after apply')
     record('NFR-005', 'Azure AD / AES-256 / TLS', 'SIM', 'SSO simulated; localStorage unencrypted')
-    record('Tech-SQL', 'Azure SQL persist', 'SIM', 'localStorage labour-planner-prototype-v2')
+    record('Tech-SQL', 'Azure SQL persist', 'SIM', 'localStorage labor-planner-prototype-v2')
     record('Tech-API', 'Node Express API', 'FAIL', 'No backend in this prototype')
     record('Payroll', 'Payroll out of scope', 'PASS', 'Not built, matches §3.2')
   } finally {

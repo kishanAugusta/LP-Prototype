@@ -481,7 +481,7 @@ function UserDirectory() {
       </Modal>
 
       <Modal open={Boolean(confirmId)} title="Remove user?" onClose={() => setConfirmId(null)}>
-        <p className="mb-4 text-sm text-slate-600">This removes the user from Labour Planner entitlements.</p>
+        <p className="mb-4 text-sm text-slate-600">This removes the user from Labor Planner entitlements.</p>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={() => setConfirmId(null)} className="lp-btn-ghost px-4 py-2 text-sm">
             Cancel

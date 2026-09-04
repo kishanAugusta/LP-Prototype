@@ -3,7 +3,7 @@ import { useStore } from '../store/AppContext'
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const HA = [38, 38, 42, 50, 52, 55, 55, 52, 48, 44, 40, 38]
 
-const LABOUR_ACTIVITY_IDS = [
+const LABOR_ACTIVITY_IDS = [
   'act-clipping',
   'act-deleafing',
   'act-lowering',
@@ -25,9 +25,9 @@ function tone(planned: number, need: number): string {
   return 'bg-rose-100 text-rose-800 border-rose-200'
 }
 
-export function AnnualLabourBudgetGrid() {
+export function AnnualLaborBudgetGrid() {
   const { state, dispatch, farmActivities, canPlan } = useStore()
-  const activities = farmActivities.filter((a) => LABOUR_ACTIVITY_IDS.includes(a.id))
+  const activities = farmActivities.filter((a) => LABOR_ACTIVITY_IDS.includes(a.id))
   const rate = state.ratePerHour
 
   function planKey(activityId: string, month: number) {
@@ -59,7 +59,7 @@ export function AnnualLabourBudgetGrid() {
     <div className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h3 className="text-sm font-bold text-ink">Annual Labour Budget</h3>
+          <h3 className="text-sm font-bold text-ink">Annual Labor Budget</h3>
           <p className="text-[11px] text-slate-500">
             Need vs planned by activity × month. Edit hours or people in each cell.
           </p>
@@ -141,7 +141,7 @@ export function AnnualLabourBudgetGrid() {
                             })
                           }}
                           className="mt-0.5 w-14 rounded border border-line bg-white px-1 py-0.5 text-center text-[10px] font-bold text-slate-700"
-                          title="Labour count (people)"
+                          title="Labor count (people)"
                         />
                         <div className="text-[8px] text-slate-400">ppl</div>
                       </td>

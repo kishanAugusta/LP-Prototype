@@ -21,8 +21,8 @@ async function main() {
 
   await page.goto('http://localhost:5173/', { waitUntil: 'domcontentloaded' })
   await page.evaluate(() => {
-    localStorage.removeItem('labour-planner-prototype-v1')
-    localStorage.removeItem('labour-planner-prototype-v2')
+    localStorage.removeItem('labor-planner-prototype-v1')
+    localStorage.removeItem('labor-planner-prototype-v2')
   })
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.waitForSelector('text=Mastronardi Produce')

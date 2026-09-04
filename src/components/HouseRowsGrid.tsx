@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { greenhouseHouses } from '../data/mock'
 import { useStore } from '../store/AppContext'
 
-/** MINI / FRED / HARVEST row-wise selector for monthly labour planning. */
+/** MINI / FRED / HARVEST row-wise selector for monthly labor planning. */
 export function HouseRowsGrid() {
   const { state, canPlan, dispatch } = useStore()
   const house = greenhouseHouses.find((h) => h.id === state.houseId)
@@ -36,7 +36,7 @@ export function HouseRowsGrid() {
 
   const rows = Array.from({ length: house.rows }, (_, i) => i + 1)
   const selectedCount = rows.filter((r) => selected[r]).length
-  /** Prototype: selected row · people · (60 / minutesPerRow) hours of labour capacity. */
+  /** Prototype: selected row · people · (60 / minutesPerRow) hours of labor capacity. */
   const hoursPerSelectedRow = people > 0 ? (people * (60 / minutesPerRow)) / 60 : 0
   const totalHours = selectedCount * hoursPerSelectedRow
   const totalBudget = totalHours * rate

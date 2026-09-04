@@ -292,7 +292,7 @@ export const seedReports = (
   },
   {
     id: 'rep-harvest',
-    name: 'Harvest labour forecast',
+    name: 'Harvest labor forecast',
     cadence: 'Monthly',
     enabled: false,
     farmIds,

@@ -1,18 +1,18 @@
-# Labour Planner — Prototype Memory
+# Labor Planner — Prototype Memory
 
 Internal reference of everything built in this clickable prototype. Use this when continuing work, demoing, or explaining the product.
 
 **Client:** Mastronardi Produce Farm Operations  
 **Built by:** Augusta Hitech  
-**App name:** Labour Planner — Workforce Allocation Platform  
+**App name:** Labor Planner — Workforce Allocation Platform  
 **Type:** Interactive React web prototype (not Figma, not production)  
-**Data:** Browser `localStorage` only (`labour-planner-prototype-v6`). No Azure, no backend.
+**Data:** Browser `localStorage` only (`labor-planner-prototype-v6`). No Azure, no backend.
 
 ---
 
 ## What this prototype is
 
-A working website that shows how supervisors plan labour by farm, commodity, activity, and 30-minute time slot; how managers review totals and notes; and how admins manage users and master data.
+A working website that shows how supervisors plan labor by farm, commodity, activity, and 30-minute time slot; how managers review totals and notes; and how admins manage users and master data.
 
 **Simulated (looks real, not connected):**
 
@@ -25,8 +25,8 @@ A working website that shows how supervisors plan labour by farm, commodity, act
 **Fully interactive:**
 
 - Role-based tabs and farm scope (Planner, Summary, Map View, Admin)
-- **Plan type** drives the planner surface (weekly labour, monthly budget, harvest, gantt)
-- Cascading farm → commodity filters; activity expand on weekly labour
+- **Plan type** drives the planner surface (weekly labor, monthly budget, harvest, gantt)
+- Cascading farm → commodity filters; activity expand on weekly labor
 - Hours and FTE calculations; notes, submit, audit reasons
 - Summary KPIs, detailed table, Group by, notes drawer; analytics in accordion
 - Admin: SSO lookup, user CRUD, farms / commodities / activities, reports, shifts, guardrails, calibration
@@ -83,7 +83,7 @@ Mike Peterson exists in the directory but is **not** a login persona. He exists 
 
 Sticky header (forest navy gradient + green→sunset accent bar):
 
-- **LP** mark + title **Labour Planner** + “Sunset Grown · Mastronardi Produce · Farm ops module”
+- **LP** mark + title **Labor Planner** + “Sunset Grown · Mastronardi Produce · Farm ops module”
 - Tab pills: Planner / Summary / Map View / Admin (role-gated)
 - **Guide**, signed-in name, role label, initials avatar, **Logout**
 
@@ -122,8 +122,8 @@ Sticky filter bar. **Plan type** swaps the whole workspace:
 
 | Plan type | Grid |
 |---|---|
-| Labour (Weekly) | Bi-weekly 14-day; expand activity rows; **click-drag** paint; Erase / People=0 / Clear activity |
-| Labour (Monthly Budget) | Editable monthly hours+people; annual activity×month detail accordion |
+| Labor (Weekly) | Bi-weekly 14-day; expand activity rows; **click-drag** paint; Erase / People=0 / Clear activity |
+| Labor (Monthly Budget) | Editable monthly hours+people; annual activity×month detail accordion |
 | Harvest (Weekly) | Bay A then Bay B; drag-to-select; 3-dot columns; reasons = codes | selected panes |
 | Tear-Out (Weekly Gantt) | Task rows + crew + day intensity **1 / 2 / 3** (not L/M/H) |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
@@ -132,7 +132,7 @@ Sticky filter bar. **Plan type** swaps the whole workspace:
 - Farm map pin opens greenhouse layout. Commodity shown when the plan type needs it.
 - Notes live in a sticky accordion; **Submit Plan** stays one click away.
 
-Past dates stay locked in weekly labour slots.
+Past dates stay locked in weekly labor slots.
 
 ### Operational scope (cascading filters)
 
@@ -140,7 +140,7 @@ Past dates stay locked in weekly labour slots.
 2. **Commodity** — only crops grown at the selected farm, further limited by the planner’s assigned commodities.
 3. **Active Activity** — required for weekly paint / monthly detail. Also limited by the planner’s assigned activities.
 
-**Rate / hr ($)** next to headcount on monthly. Footer shows labour cost = hours × rate.
+**Rate / hr ($)** next to headcount on monthly. Footer shows labor cost = hours × rate.
 
 Each **farm + commodity + activity** combination is its own plan. (No Planner house chips — MINI / FRED / HARVEST removed from the sticky bar.)
 
@@ -186,7 +186,7 @@ Shown after farm, commodity, and activity are selected (and not dismissed).
 - **Apply Recommendation** — fills **unlocked (today and future) slots only**. Past days unchanged. User can still paint over any cell.
 - Success toast after apply.
 
-### Labour Schedule Notes + Submit
+### Labor Schedule Notes + Submit
 
 - Subject + body. Subject defaults to “Operational note” if blank.
 - **Save note** — stores with author, timestamp, farm, week, activity. Success toast.
@@ -252,8 +252,8 @@ Farm Planners only see their assigned farms’ data. Site Managers and Admins se
 
 | Plan type | Grid |
 |---|---|
-| Labour (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
-| Labour (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr; KPIs |
+| Labor (Weekly) | Bi-weekly 14-day; expand activity rows to paint 30-min slots |
+| Labor (Monthly Budget) | Annual activity × month; need / planned / people; rate $/hr; KPIs |
 | Harvest (Weekly) | Bay A then Bay B; drag-to-select; 3-dot columns; reasons = codes | selected panes |
 | Tear-Out (Weekly Gantt) | Task rows + crew + day intensity **1 / 2 / 3** (not L/M/H) |
 | Planting (Weekly Gantt) | Same Gantt pattern for planting tasks |
@@ -307,7 +307,7 @@ Three cards: **Farms**, **Commodities**, **Activities**.
 
 ### Planning report provisioning
 
-Enable/disable each Power BI labour report. Assign **farms**, **commodities**, and **activities** included in the report via chips.
+Enable/disable each Power BI labor report. Assign **farms**, **commodities**, and **activities** included in the report via chips.
 
 ### Operational guardrails
 

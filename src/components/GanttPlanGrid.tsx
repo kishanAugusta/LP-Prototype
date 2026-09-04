@@ -48,7 +48,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
     return state.ganttMeta[metaKey(taskId)] ?? { rows: 100, crew: 2 }
   }
 
-  function labourHrs(taskId: string) {
+  function laborHrs(taskId: string) {
     const m = meta(taskId)
     const cal =
       state.calibrations.find((c) =>
@@ -59,15 +59,15 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
 
   function elapsedHrs(taskId: string) {
     const m = meta(taskId)
-    return labourHrs(taskId) / Math.max(1, m.crew)
+    return laborHrs(taskId) / Math.max(1, m.crew)
   }
 
-  let totalLabour = 0
+  let totalLabor = 0
   let totalElapsed = 0
   for (const task of tasks) {
     const scheduled = dates.some((d) => state.ganttDays[dayKey(task.id, toISODate(d))])
     if (scheduled) {
-      totalLabour += labourHrs(task.id)
+      totalLabor += laborHrs(task.id)
       totalElapsed += elapsedHrs(task.id)
     }
   }
@@ -98,7 +98,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
               <th className="p-2 text-left">Task</th>
               <th className="p-2 text-center">Rows</th>
               <th className="p-2 text-center">Crew</th>
-              <th className="p-2 text-center">Labour hrs</th>
+              <th className="p-2 text-center">Labor hrs</th>
               <th className="p-2 text-center">Elapsed hrs</th>
               {dates.map((d, i) => (
                 <th key={toISODate(d)} className="border-l border-white/10 p-1 text-center font-bold">
@@ -112,7 +112,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
           <tbody>
             {tasks.map((task) => {
               const m = meta(task.id)
-              const labour = labourHrs(task.id)
+              const labor = laborHrs(task.id)
               const elapsed = elapsedHrs(task.id)
               return (
                 <tr key={task.id} className="border-b border-line">
@@ -149,7 +149,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                       className="lp-input w-12 px-1 py-1 text-center text-xs"
                     />
                   </td>
-                  <td className="p-2 text-center tabular-nums font-semibold">{labour.toFixed(1)}</td>
+                  <td className="p-2 text-center tabular-nums font-semibold">{labor.toFixed(1)}</td>
                   <td className="p-2 text-center tabular-nums font-bold text-sunset">{elapsed.toFixed(1)}</td>
                   {dates.map((d) => {
                     const date = toISODate(d)
@@ -180,7 +180,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
       </div>
       <div className="mt-3 flex flex-wrap justify-end gap-4 text-sm font-bold">
         <span>
-          Total labour: <span className="text-ink">{totalLabour.toFixed(1)} hrs</span>
+          Total labor: <span className="text-ink">{totalLabor.toFixed(1)} hrs</span>
         </span>
         <span className="text-sunset">
           Total elapsed (with crews): {totalElapsed.toFixed(1)} hrs

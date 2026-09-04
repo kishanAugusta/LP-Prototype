@@ -83,7 +83,7 @@ export function SummaryTab() {
           <Filter className="h-4 w-4 text-teal" />
           <div>
             <p className="lp-kicker">Summary</p>
-            <h2 className="text-lg font-extrabold tracking-tight text-ink">Planned labour overview</h2>
+            <h2 className="text-lg font-extrabold tracking-tight text-ink">Planned labor overview</h2>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">

@@ -33,14 +33,14 @@ export function LoginScreen() {
             Farm operations
           </p>
           <h1 className="mt-4 max-w-md text-5xl font-extrabold leading-[1.08] tracking-tight">
-            Labour Planner
+            Labor Planner
           </h1>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
             Allocate crews by farm, greenhouse house, commodity, and 30-minute slot. One schedule for
             supervisors, managers, and admins — ready to embed under Sunset Grown.
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
-            {['Weekly labour', 'Harvest rows', 'Budget plan'].map((tag) => (
+            {['Weekly labor', 'Harvest rows', 'Budget plan'].map((tag) => (
               <span
                 key={tag}
                 className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold text-white/80"
@@ -50,14 +50,14 @@ export function LoginScreen() {
             ))}
           </div>
         </div>
-        <p className="relative text-xs text-white/40">Workforce allocation · greenhouse labour</p>
+        <p className="relative text-xs text-white/40">Workforce allocation · greenhouse labor</p>
       </div>
 
       <div className="flex items-center justify-center bg-gradient-to-br from-[#f6fbf7] via-mist to-[#e8f3eb] p-6">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <p className="text-xs font-bold tracking-[0.2em] text-teal uppercase">Sunset Grown</p>
-            <h1 className="mt-1 text-3xl font-extrabold text-ink">Labour Planner</h1>
+            <h1 className="mt-1 text-3xl font-extrabold text-ink">Labor Planner</h1>
           </div>
           <div className="lp-panel p-8 shadow-xl shadow-navy/5">
             <h2 className="text-xl font-extrabold tracking-tight text-ink">Sign in</h2>

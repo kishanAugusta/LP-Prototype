@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               LP
             </span>
             <div className="min-w-0">
-              <h1 className="text-base font-extrabold tracking-tight">Labour Planner</h1>
+              <h1 className="text-base font-extrabold tracking-tight">Labor Planner</h1>
               <p className="truncate text-[10px] font-medium tracking-wide text-white/55">
                 Sunset Grown · Mastronardi Produce · Farm ops module
               </p>

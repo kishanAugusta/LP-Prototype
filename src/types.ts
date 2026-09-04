@@ -4,15 +4,15 @@ export type Tab = 'planner' | 'summary' | 'admin' | 'map'
 export type GroupBy = 'detailed' | 'horizon' | 'planner' | 'farm' | 'commodity' | 'activity'
 export type HouseId = 'house-mini' | 'house-fred' | 'house-harvest'
 export type PlanType =
-  | 'labour-weekly'
-  | 'labour-monthly'
+  | 'labor-weekly'
+  | 'labor-monthly'
   | 'harvest-weekly'
   | 'tearout-gantt'
   | 'planting-gantt'
 
 export const PLAN_TYPE_OPTIONS: { id: PlanType; label: string; group: string }[] = [
-  { id: 'labour-weekly', label: 'Labour (Weekly)', group: 'Labour Plans' },
-  { id: 'labour-monthly', label: 'Labour (Monthly Budget)', group: 'Labour Plans' },
+  { id: 'labor-weekly', label: 'Labor (Weekly)', group: 'Labor Plans' },
+  { id: 'labor-monthly', label: 'Labor (Monthly Budget)', group: 'Labor Plans' },
   { id: 'harvest-weekly', label: 'Harvest (Weekly)', group: 'Mini-FRED Harvest Plans' },
   { id: 'tearout-gantt', label: 'Tear-Out (Weekly Gantt)', group: 'Tear-Out / Cleanout' },
   { id: 'planting-gantt', label: 'Planting (Weekly Gantt)', group: 'Planting' },

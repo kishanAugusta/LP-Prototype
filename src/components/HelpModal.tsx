@@ -65,12 +65,9 @@ export function HelpModal() {
             <button
               type="button"
               onClick={() => {
-                localStorage.removeItem('labour-planner-prototype-v1')
-                localStorage.removeItem('labour-planner-prototype-v2')
-                localStorage.removeItem('labour-planner-prototype-v3')
-                localStorage.removeItem('labour-planner-prototype-v4')
-                localStorage.removeItem('labour-planner-prototype-v5')
-                localStorage.removeItem('labour-planner-prototype-v6')
+                for (const prefix of ['labor-planner-prototype', 'labour-planner-prototype']) {
+                  for (let v = 1; v <= 6; v++) localStorage.removeItem(`${prefix}-v${v}`)
+                }
                 window.location.reload()
               }}
               className="lp-btn-ghost px-4 py-2 text-xs"
@@ -87,7 +84,7 @@ export function HelpModal() {
 function Start() {
   return (
     <div className="space-y-3">
-      <h4 className="text-base font-bold text-ink">You can explore Labour Planner without a presenter</h4>
+      <h4 className="text-base font-bold text-ink">You can explore Labor Planner without a presenter</h4>
       <p>
         This is a working website, not a Figma file. Click anything. Your changes stay in this browser
         until you reset.
@@ -173,16 +170,16 @@ function Planner() {
       <h4 className="text-base font-bold text-slate-900">Planner tab</h4>
       <p>
         Sticky <strong>Plan type</strong> bar stays visible. Changing plan type swaps the whole
-        workspace (Labour weekly / monthly budget / Harvest / Tear-Out / Planting Gantt). Notes sit in
+        workspace (Labor weekly / monthly budget / Harvest / Tear-Out / Planting Gantt). Notes sit in
         an accordion; <strong>Submit Plan</strong> stays one click away.
       </p>
       <ul className="list-disc space-y-1 pl-5">
         <li>
-          <strong>Labour (Weekly)</strong> — bi-weekly 14-day; expand an activity, then click-drag to
-          paint. Use Erase, People = 0, or Clear activity to remove labour.
+          <strong>Labor (Weekly)</strong> — bi-weekly 14-day; expand an activity, then click-drag to
+          paint. Use Erase, People = 0, or Clear activity to remove labor.
         </li>
         <li>
-          <strong>Labour (Monthly Budget)</strong> — enter people or planned hours per month; optional
+          <strong>Labor (Monthly Budget)</strong> — enter people or planned hours per month; optional
           annual activity × month detail in an accordion.
         </li>
         <li>

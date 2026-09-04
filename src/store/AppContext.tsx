@@ -59,7 +59,7 @@ import type {
   User,
 } from '../types'
 
-const STORAGE_KEY = 'labour-planner-prototype-v6'
+const STORAGE_KEY = 'labor-planner-prototype-v6'
 
 interface PersistShape {
   users: User[]
@@ -294,7 +294,7 @@ function initialState(): AppState {
       seedCommodities.map((c) => c.id),
       seedActivities.map((a) => a.id),
     ),
-    planType: 'labour-weekly',
+    planType: 'labor-weekly',
     harvestPicks: {},
     ganttMeta: {},
     ganttDays: {},
@@ -352,9 +352,9 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, horizon: action.horizon, expandedWeekISO: null }
     case 'setPlanType': {
       const planType = action.planType
-      const horizon: Horizon = planType === 'labour-monthly' ? 'monthly' : 'weekly'
+      const horizon: Horizon = planType === 'labor-monthly' ? 'monthly' : 'weekly'
       const activityId =
-        planType === 'labour-weekly' || planType === 'labour-monthly' ? state.activityId : state.activityId
+        planType === 'labor-weekly' || planType === 'labor-monthly' ? state.activityId : state.activityId
       return {
         ...state,
         planType,
@@ -680,7 +680,7 @@ function reducer(state: AppState, action: Action): AppState {
       let filled = 0
       let plannedHours = 0
 
-      if (state.planType === 'labour-weekly') {
+      if (state.planType === 'labor-weekly') {
         const dates = weekDates(new Date(state.weekStartISO + 'T00:00:00')).map(toISODate)
         for (const date of dates) {
           for (const activity of state.activities) {
@@ -699,7 +699,7 @@ function reducer(state: AppState, action: Action): AppState {
             }
           }
         }
-      } else if (state.planType === 'labour-monthly') {
+      } else if (state.planType === 'labor-monthly') {
         filled = Object.keys(state.monthlyPlan).filter((k) => k.startsWith(`${state.farmId}|${state.year}|`))
           .length
         plannedHours = Object.entries(state.monthlyPlan)
@@ -725,7 +725,7 @@ function reducer(state: AppState, action: Action): AppState {
       if (
         maxWeekly != null &&
         plannedHours > maxWeekly &&
-        (state.planType === 'labour-weekly' || state.planType === 'labour-monthly')
+        (state.planType === 'labor-weekly' || state.planType === 'labor-monthly')
       ) {
         return pushToast(state, {
           tone: 'warning',
@@ -1123,11 +1123,25 @@ function confirmSubmit(state: AppState, subKey: string, reason?: string): AppSta
   )
 }
 
+const LEGACY_STORAGE_KEY = 'labour-planner-prototype-v6'
+
+function migratePersisted(data: PersistShape): PersistShape {
+  const legacy = data.planType as string
+  const planType: PlanType =
+    legacy === 'labour-weekly'
+      ? 'labor-weekly'
+      : legacy === 'labour-monthly'
+        ? 'labor-monthly'
+        : data.planType
+  return { ...data, planType }
+}
+
 function loadPersisted(): Partial<AppState> | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw =
+      localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as PersistShape
+    return migratePersisted(JSON.parse(raw) as PersistShape)
   } catch {
     return null
   }

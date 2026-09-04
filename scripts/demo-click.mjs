@@ -1,5 +1,5 @@
 /**
- * Headed click-through demo of Labour Planner.
+ * Headed click-through demo of Labor Planner.
  * Opens Edge, slow-clicks every main control, saves screenshots.
  */
 import { createRequire } from 'node:module'
@@ -46,7 +46,7 @@ async function main() {
     note(true, 'Login screen', 'Mastronardi Produce + 3 personas')
 
     await page.getByRole('button', { name: /exploration guide/i }).click()
-    await page.waitForSelector('text=You can explore Labour Planner without a presenter')
+    await page.waitForSelector('text=You can explore Labor Planner without a presenter')
     await shot(page, '02-guide')
     note(true, 'Exploration guide opens from login')
     await page.locator('button').filter({ hasText: /^$/ }).first()

@@ -10,8 +10,8 @@ import {
 } from '../lib/time'
 import { useStore } from '../store/AppContext'
 
-/** Labour activities shown in the bi-weekly planner (excludes tear-out / planting). */
-const LABOUR_ACTIVITY_IDS = [
+/** Labor activities shown in the bi-weekly planner (excludes tear-out / planting). */
+const LABOR_ACTIVITY_IDS = [
   'act-clipping',
   'act-deleafing',
   'act-lowering',
@@ -20,14 +20,14 @@ const LABOUR_ACTIVITY_IDS = [
   'act-twisting',
 ]
 
-export function BiWeeklyLabourGrid() {
+export function BiWeeklyLaborGrid() {
   const { state, dispatch, farmActivities, canPlan } = useStore()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [eraseMode, setEraseMode] = useState(false)
   const weekStart = new Date(state.weekStartISO + 'T00:00:00')
   const dates = biWeekDates(weekStart)
   const dateISOs = dates.map(toISODate)
-  const activities = farmActivities.filter((a) => LABOUR_ACTIVITY_IDS.includes(a.id))
+  const activities = farmActivities.filter((a) => LABOR_ACTIVITY_IDS.includes(a.id))
 
   function dayHours(activityId: string, date: string): number {
     let hours = 0
@@ -184,7 +184,7 @@ export function BiWeeklyLabourGrid() {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
         <span>
           Drag across unlocked cells to paint headcount. Use Erase / People = 0 / Clear activity to remove
-          labour.
+          labor.
         </span>
         <span className="font-bold text-ink">
           Grand Total Hours: <span className="text-brand">{grand.toFixed(1)}</span>

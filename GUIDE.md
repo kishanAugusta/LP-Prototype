@@ -1,4 +1,4 @@
-# Labour Planner — Self-Exploration Guide
+# Labor Planner — Self-Exploration Guide
 
 Use this guide to click through the prototype on your own. You do not need a presenter, Figma, or Azure access. Every button in the app is live; this document tells you what to try and what you should see.
 
@@ -11,7 +11,7 @@ Use this guide to click through the prototype on your own. You do not need a pre
 
 ## 1. What you are looking at
 
-Labour Planner is the proposed workforce allocation application for Mastronardi Produce Farm Operations, styled to sit under the **Sunset Grown** parent brand. Supervisors plan labour by farm, commodity, activity, and time; managers review totals and notes; admins manage users and master data.
+Labor Planner is the proposed workforce allocation application for Mastronardi Produce Farm Operations, styled to sit under the **Sunset Grown** parent brand. Supervisors plan labor by farm, commodity, activity, and time; managers review totals and notes; admins manage users and master data.
 
 This prototype shows how that website will look and behave. The following are **simulated** so you can explore without production systems:
 
@@ -64,7 +64,7 @@ Follow these steps in order the first time. After that, jump to any section belo
 ### Step A — Plan type + farm scope
 
 1. Open the **Planner** tab. The sticky **Plan type** bar stays at the top.
-2. Leave **Plan type** on **Labour (Weekly)**.
+2. Leave **Plan type** on **Labor (Weekly)**.
 3. Set **Farm** to **North Farm**.
 4. Open the **Commodity** dropdown.
 
@@ -82,10 +82,10 @@ Grey / locked cells are **past days**. You cannot edit them.
 
 ### Step C — Switch plan types (quick look)
 
-1. Change **Plan type** to **Labour (Monthly Budget)** — annual activity × month budget.
+1. Change **Plan type** to **Labor (Monthly Budget)** — annual activity × month budget.
 2. Change to **Harvest (Weekly)** — bay/row picking and reason codes.
 3. Change to **Tear-Out** or **Planting** Gantt — Light/Medium/Heavy day cells.
-4. Switch back to **Labour (Weekly)** for submit.
+4. Switch back to **Labor (Weekly)** for submit.
 
 ### Step D — Notes and submit
 
@@ -115,13 +115,13 @@ Grey / locked cells are **past days**. You cannot edit them.
 
 | Plan type | What you get |
 |---|---|
-| **Labour (Weekly)** | Bi-weekly 14-day grid; expand an activity to paint 30-min slots. |
-| **Labour (Monthly Budget)** | Annual activity × month need / planned / people; rate $/hr. |
+| **Labor (Weekly)** | Bi-weekly 14-day grid; expand an activity to paint 30-min slots. |
+| **Labor (Monthly Budget)** | Annual activity × month need / planned / people; rate $/hr. |
 | **Harvest (Weekly)** | Bay A/B rows, day tabs Mon–Sat, reason codes. |
 | **Tear-Out (Weekly Gantt)** | Task rows, crew, Light/Medium/Heavy day cells. |
 | **Planting (Weekly Gantt)** | Same Gantt pattern for planting. |
 
-Year and planning week appear when the plan type needs them. Past dates stay locked on weekly labour.
+Year and planning week appear when the plan type needs them. Past dates stay locked on weekly labor.
 
 ### Operational scope
 
@@ -129,9 +129,9 @@ Year and planning week appear when the plan type needs them. Past dates stay loc
 |---|---|
 | **Farm** | Limited to farms on your SSO profile. Map pin opens greenhouse layout. |
 | **Commodity** | Only crops grown at the selected farm (when the plan type needs it). |
-| **Activity rows** | On Labour Weekly, expand a row to paint; each activity is its own plan. |
+| **Activity rows** | On Labor Weekly, expand a row to paint; each activity is its own plan. |
 
-### Hours + click-and-drag (Labour Weekly)
+### Hours + click-and-drag (Labor Weekly)
 
 1. Expand an activity. Type a whole number for people (0 clears as you drag).
 2. Press on a cell and drag across others.
@@ -144,7 +144,7 @@ Year and planning week appear when the plan type needs them. Past dates stay loc
 
 - Sticky bar keeps **Submit Plan** one click away; notes sit in an accordion.
 - **Save note** stores the comment with your name and timestamp.
-- Empty labour grids cannot be submitted.
+- Empty labor grids cannot be submitted.
 - If the browser goes offline, Submit is disabled.
 
 ---
@@ -237,7 +237,7 @@ Prior weeks already contain planned hours so Summary and charts are populated be
 
 | Issue | What to do |
 |---|---|
-| Grid will not accept clicks | On Labour Weekly, expand an activity. Check that the day is not in the past. |
+| Grid will not accept clicks | On Labor Weekly, expand an activity. Check that the day is not in the past. |
 | Commodity list looks “wrong” | Change **Farm** first. North Farm is the clean demo for crop filtering. |
 | No Admin tab | You are not signed in as System Admin. Log out and switch persona. |
 | Submit is greyed out | You are offline, or you are a Site Manager. |
@@ -254,4 +254,4 @@ Still to connect in the real build: Azure AD SSO, Azure SQL persistence, live Pr
 
 ---
 
-*Labour Planner · Augusta Hitech for Mastronardi Produce / Sunset Grown*
+*Labor Planner · Augusta Hitech for Mastronardi Produce / Sunset Grown*

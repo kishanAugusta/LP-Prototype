@@ -8,8 +8,8 @@ import {
 } from '../lib/time'
 import { useStore } from '../store/AppContext'
 import { Accordion } from './Accordion'
-import { AnnualLabourBudgetGrid } from './AnnualLabourBudgetGrid'
-import { BiWeeklyLabourGrid } from './BiWeeklyLabourGrid'
+import { AnnualLaborBudgetGrid } from './AnnualLaborBudgetGrid'
+import { BiWeeklyLaborGrid } from './BiWeeklyLaborGrid'
 import { FarmMapModal } from './FarmMapModal'
 import { GanttPlanGrid } from './GanttPlanGrid'
 import { HarvestPlanGrid } from './HarvestPlanGrid'
@@ -30,10 +30,10 @@ export function PlannerTab() {
   const [notesOpen, setNotesOpen] = useState(false)
   const [annualOpen, setAnnualOpen] = useState(false)
   const yearWeeks = weeksInYear(state.year)
-  const showWeek = state.planType !== 'labour-monthly'
+  const showWeek = state.planType !== 'labor-monthly'
   const showCommodity =
-    state.planType === 'labour-weekly' ||
-    state.planType === 'labour-monthly' ||
+    state.planType === 'labor-weekly' ||
+    state.planType === 'labor-monthly' ||
     state.planType === 'tearout-gantt' ||
     state.planType === 'planting-gantt'
 
@@ -43,7 +43,7 @@ export function PlannerTab() {
         <div className="mb-2 flex items-center justify-between gap-2">
           <div>
             <p className="lp-kicker">Planner</p>
-            <h2 className="text-lg font-extrabold tracking-tight text-ink">Labour schedule</h2>
+            <h2 className="text-lg font-extrabold tracking-tight text-ink">Labor schedule</h2>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-5">
@@ -136,7 +136,7 @@ export function PlannerTab() {
           )}
         </div>
 
-        {state.planType === 'labour-monthly' && (
+        {state.planType === 'labor-monthly' && (
           <div className="mt-2 flex flex-wrap items-end gap-3 border-t border-line/80 pt-2">
             <Field label="Active activity">
               <select
@@ -192,8 +192,8 @@ export function PlannerTab() {
       <FarmMapModal />
 
       <div className="lp-workspace-main min-h-0 space-y-3">
-        {state.planType === 'labour-weekly' && <BiWeeklyLabourGrid />}
-        {state.planType === 'labour-monthly' && (
+        {state.planType === 'labor-weekly' && <BiWeeklyLaborGrid />}
+        {state.planType === 'labor-monthly' && (
           <>
             <MonthlyBudgetGrid />
             <Accordion
@@ -202,7 +202,7 @@ export function PlannerTab() {
               open={annualOpen}
               onToggle={() => setAnnualOpen((v) => !v)}
             >
-              <AnnualLabourBudgetGrid />
+              <AnnualLaborBudgetGrid />
             </Accordion>
           </>
         )}
