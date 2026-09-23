@@ -440,7 +440,7 @@ function ActivityBlock({
       {open &&
         SLOT_LABELS.map((label, slot) => (
           <tr key={`${activityId}-${slot}`} className="bg-mist/40">
-            <td className="sticky left-0 z-[1] bg-mist/90 px-2 py-0 text-[9px] leading-none font-semibold text-slate-500">
+            <td className="sticky left-0 z-[1] border-b border-line bg-mist/90 px-2 py-0 text-[9px] leading-none font-semibold text-slate-500">
               {label}
             </td>
             {dates.map((d, dayIdx) => {
@@ -451,7 +451,7 @@ function ActivityBlock({
               const previewWrite = preview && drag?.mode === 'write'
               const previewErase = preview && drag?.mode === 'erase'
               return (
-                <td key={date} className="border-l border-line p-0">
+                <td key={date} className="border-b border-l border-line p-0">
                   <button
                     type="button"
                     data-slot-cell
