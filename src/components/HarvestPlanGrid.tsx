@@ -1,13 +1,13 @@
-import { Check, Eraser, Search, Trash2, X } from 'lucide-react'
+import { Check, Eraser, Lock, Search, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { weekKeyFromDate } from '../lib/time'
+import { isPastPlanningWeek, weekKeyFromDate } from '../lib/time'
 import { useStore } from '../store/AppContext'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
-const BAY_A = Array.from({ length: 51 }, (_, i) => 96 - i) // 96→46 left→right (46 on the right)
+/** Mini-FRED layout: 95 pickable rows (client). Exact bay map may be refined later. */
+const BAY_A = Array.from({ length: 50 }, (_, i) => 95 - i) // 95→46 left→right
 const BAY_B = Array.from({ length: 45 }, (_, i) => 1 + i) // 1–45
-const WALKWAYS = new Set([50, 60, 70, 80, 90, 10, 20, 30, 40])
 
 /** Dot positions along the stem: near number, mid, near bottom (equal spacing). */
 const DOT_TOPS = ['8%', '50%', '92%'] as const
@@ -23,10 +23,13 @@ export function HarvestPlanGrid() {
   /** Selected ST.RM codes → free-text reason (user-typed, not predefined). */
   const [selectedReasons, setSelectedReasons] = useState<Record<string, string>>({})
   const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
+  const pastWeekLocked = isPastPlanningWeek(state.weekStartISO)
+  const canEditWeek = canPlan && !pastWeekLocked
 
   const selectedCodes = Object.keys(selectedReasons)
 
   function toggleCode(id: string) {
+    if (!canEditWeek) return
     setSelectedReasons((prev) => {
       if (id in prev) {
         const next = { ...prev }
@@ -38,6 +41,7 @@ export function HarvestPlanGrid() {
   }
 
   function setReasonText(id: string, text: string) {
+    if (!canEditWeek) return
     setSelectedReasons((prev) => (id in prev ? { ...prev, [id]: text } : prev))
   }
 
@@ -50,16 +54,15 @@ export function HarvestPlanGrid() {
   }
 
   function setRow(row: number, on: boolean) {
-    if (!canPlan || WALKWAYS.has(row)) return
+    if (!canEditWeek) return
     const currently = isOn(row)
     if (currently === on) return
     dispatch({ type: 'setHarvestRow', rowId: String(row), on })
   }
 
   function setBay(rows: number[], on: boolean) {
-    if (!canPlan) return
+    if (!canEditWeek) return
     for (const row of rows) {
-      if (WALKWAYS.has(row)) continue
       setRow(row, on)
     }
   }
@@ -79,6 +82,12 @@ export function HarvestPlanGrid() {
 
   return (
     <section className="lp-panel mb-0 p-3">
+      {pastWeekLocked ? (
+        <p className="mb-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+          <Lock className="h-3.5 w-3.5" aria-hidden />
+          Past week — editing is locked.
+        </p>
+      ) : null}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1">
           {DAYS.map((d, i) => (
@@ -102,18 +111,18 @@ export function HarvestPlanGrid() {
           <span className="hidden text-[10px] text-slate-500 sm:inline">Drag across rows to select</span>
           <button
             type="button"
-            disabled={!canPlan}
+            disabled={!canEditWeek}
             onClick={() => dispatch({ type: 'clearHarvestDay' })}
-            className="lp-btn-ghost flex items-center gap-1 px-3 py-1.5 text-xs"
+            className="lp-btn-ghost flex items-center gap-1 px-3 py-1.5 text-xs disabled:opacity-40"
           >
             <Eraser className="h-3.5 w-3.5" />
             Clear Day
           </button>
           <button
             type="button"
-            disabled={!canPlan}
+            disabled={!canEditWeek}
             onClick={() => dispatch({ type: 'clearHarvestWeek' })}
-            className="flex items-center gap-1 rounded-[8px] border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700"
+            className="flex items-center gap-1 rounded-[8px] border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 disabled:opacity-40"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Clear Week
@@ -129,7 +138,7 @@ export function HarvestPlanGrid() {
             isOn={isOn}
             onPaint={setRow}
             onAll={(on) => setBay(BAY_A, on)}
-            canPlan={canPlan}
+            canPlan={canEditWeek}
           />
           <Bay
             title="Bay B — South"
@@ -137,7 +146,7 @@ export function HarvestPlanGrid() {
             isOn={isOn}
             onPaint={setRow}
             onAll={(on) => setBay(BAY_B, on)}
-            canPlan={canPlan}
+            canPlan={canEditWeek}
           />
 
           {/* Two-pane reasons: codes | selected + free-text input */}
@@ -155,8 +164,9 @@ export function HarvestPlanGrid() {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    disabled={!canEditWeek}
                     placeholder="Search ST.RM codes…"
-                    className="lp-input w-full py-1 pr-2 pl-7 text-[11px]"
+                    className="lp-input w-full py-1 pr-2 pl-7 text-[11px] disabled:opacity-50"
                   />
                 </div>
                 <p className="shrink-0 border-b border-line bg-mist/30 px-2.5 py-1 text-[9px] font-bold tracking-wide text-slate-400 uppercase">
@@ -178,8 +188,9 @@ export function HarvestPlanGrid() {
                             <td className="p-0" colSpan={2}>
                               <button
                                 type="button"
+                                disabled={!canEditWeek}
                                 onClick={() => toggleCode(c.id)}
-                                className={`flex w-full items-center justify-between px-2.5 py-1.5 text-left tabular-nums ${
+                                className={`flex w-full items-center justify-between px-2.5 py-1.5 text-left tabular-nums disabled:cursor-not-allowed disabled:opacity-60 ${
                                   on
                                     ? 'bg-green-50 font-bold text-green-800'
                                     : 'text-ink hover:bg-mist'
@@ -226,14 +237,16 @@ export function HarvestPlanGrid() {
                           <input
                             type="text"
                             value={selectedReasons[id] ?? ''}
+                            disabled={!canEditWeek}
                             onChange={(e) => setReasonText(id, e.target.value)}
                             placeholder="Reason for Not Picking…"
-                            className="lp-input min-w-0 flex-1 px-2 py-1 text-[11px]"
+                            className="lp-input min-w-0 flex-1 px-2 py-1 text-[11px] disabled:opacity-50"
                           />
                           <button
                             type="button"
+                            disabled={!canEditWeek}
                             onClick={() => toggleCode(id)}
-                            className="shrink-0 rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                            className="shrink-0 rounded p-0.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
                             title="Remove"
                           >
                             <X className="h-3.5 w-3.5" />
@@ -282,16 +295,6 @@ export function HarvestPlanGrid() {
                 <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border border-line bg-white" />{' '}
                 Unscheduled row
               </p>
-              <p className="flex items-center gap-1.5">
-                <span
-                  className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm"
-                  style={{
-                    backgroundImage:
-                      'repeating-linear-gradient(135deg, #bae6fd 0 2px, #e0f2fe 2px 4px)',
-                  }}
-                />{' '}
-                Walkway / aisle
-              </p>
             </div>
           </div>
           <div className="rounded-[8px] border border-line bg-green-50/60 p-3 text-[11px] text-slate-600">
@@ -328,8 +331,7 @@ function Bay({
 }) {
   const dragging = useRef(false)
   const paintOn = useRef(true)
-  const selectable = rows.filter((r) => !WALKWAYS.has(r))
-  const allOn = selectable.length > 0 && selectable.every(isOn)
+  const allOn = rows.length > 0 && rows.every(isOn)
 
   useEffect(() => {
     const stop = () => {
@@ -344,8 +346,8 @@ function Bay({
   }, [])
 
   return (
-    <div className="rounded-[8px] border border-line px-2.5 py-2">
-      <div className="mb-2 flex items-center justify-between gap-2">
+    <div className="rounded-[8px] border border-line px-1.5 py-1.5 sm:px-2">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <p className="text-[11px] font-extrabold tracking-wide text-ink uppercase">{title}</p>
         <div className="flex items-center gap-2 text-[11px]">
           <button
@@ -356,74 +358,57 @@ function Bay({
           >
             {allOn ? 'All Off' : 'All On'}
           </button>
-          <span className="text-slate-400">{selectable.length} rows</span>
+          <span className="text-slate-400">{rows.length} rows</span>
         </div>
       </div>
-      <div className="custom-scroll grid-select-none flex gap-0.5 overflow-x-auto pb-1">
+      <div className="grid-select-none flex w-full gap-px">
         {rows.map((row) => {
-          const walk = WALKWAYS.has(row)
           const on = isOn(row)
           return (
             <button
               key={row}
               type="button"
-              title={walk ? `Walkway ${row}` : `Row ${row}`}
-              disabled={!canPlan || walk}
+              title={`Row ${row}`}
+              disabled={!canPlan}
               onPointerDown={(e) => {
-                if (walk || !canPlan) return
+                if (!canPlan) return
                 e.preventDefault()
                 dragging.current = true
                 paintOn.current = !on
                 onPaint(row, paintOn.current)
               }}
               onPointerEnter={() => {
-                if (!dragging.current || walk || !canPlan) return
+                if (!dragging.current || !canPlan) return
                 onPaint(row, paintOn.current)
               }}
               onClick={(e) => {
-                // Pointer down already painted; avoid double-toggle on click
-                if (walk) return
                 e.preventDefault()
               }}
-              className={`flex w-5 shrink-0 touch-none flex-col items-center disabled:cursor-default ${
-                walk ? '' : 'hover:opacity-90'
-              }`}
+              className="flex min-w-0 flex-1 touch-none flex-col items-center hover:opacity-90 disabled:cursor-default"
             >
               <span
-                className={`mb-0.5 text-[8px] font-bold tabular-nums leading-none ${
+                className={`mb-0.5 text-[7px] font-bold tabular-nums leading-none sm:text-[8px] ${
                   on ? 'text-brand' : 'text-slate-500'
                 }`}
               >
                 {row}
               </span>
-              {walk ? (
+              <span className="relative h-14 w-full max-w-[0.65rem] sm:h-16">
                 <span
-                  className="h-[4.5rem] w-3 rounded-sm border border-sky-200"
-                  style={{
-                    backgroundImage:
-                      'repeating-linear-gradient(135deg, #bae6fd 0 2px, #e0f2fe 2px 4px)',
-                  }}
+                  className={`absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 ${
+                    on ? 'bg-brand' : 'bg-slate-300'
+                  }`}
                 />
-              ) : (
-                <span className="relative h-[4.5rem] w-3">
+                {DOT_TOPS.map((top) => (
                   <span
-                    className={`absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 ${
-                      on ? 'bg-brand' : 'bg-slate-300'
+                    key={top}
+                    className={`absolute left-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full border sm:h-1.5 sm:w-1.5 ${
+                      on ? 'border-brand bg-brand' : 'border-slate-400 bg-white'
                     }`}
+                    style={{ top }}
                   />
-                  {DOT_TOPS.map((top) => (
-                    <span
-                      key={top}
-                      className={`absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border ${
-                        on
-                          ? 'border-brand bg-brand'
-                          : 'border-slate-400 bg-white'
-                      }`}
-                      style={{ top }}
-                    />
-                  ))}
-                </span>
-              )}
+                ))}
+              </span>
             </button>
           )
         })}

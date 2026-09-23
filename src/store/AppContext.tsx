@@ -22,6 +22,7 @@ import {
   seedSubmissions,
 } from '../data/mock'
 import { buildRecommendation, fteFromHours } from '../lib/calc'
+import { isPastWeeklyPlanLocked } from '../lib/temporalLock'
 import {
   addDays,
   cellKey,
@@ -237,6 +238,19 @@ function canEditPlan(state: AppState): boolean {
   return Boolean(user && user.role !== 'manager')
 }
 
+/** Weekly / gantt plans for weeks before the current week are read-only (BR-001). */
+function isPastWeekLocked(state: AppState): boolean {
+  return isPastWeeklyPlanLocked(state.planType, state.weekStartISO)
+}
+
+function pastWeekLockedToast(state: AppState): AppState {
+  return pushToast(state, {
+    tone: 'warning',
+    title: 'Past week locked',
+    message: 'Plans older than the current week cannot be edited.',
+  })
+}
+
 function harvestDayPrefix(state: AppState): string {
   const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
   return `${state.farmId}|${weekKey}|${state.harvestDay}|`
@@ -368,6 +382,7 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, harvestDay: Math.max(0, Math.min(5, action.day)) }
     case 'toggleHarvestRow': {
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const key = harvestKey(state, action.rowId)
       const harvestPicks = { ...state.harvestPicks }
       if (harvestPicks[key]) delete harvestPicks[key]
@@ -376,6 +391,7 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'setHarvestRow': {
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const key = harvestKey(state, action.rowId)
       const harvestPicks = { ...state.harvestPicks }
       if (action.on) harvestPicks[key] = true
@@ -384,6 +400,7 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'clearHarvestDay': {
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const prefix = harvestDayPrefix(state)
       const harvestPicks = { ...state.harvestPicks }
       for (const key of Object.keys(harvestPicks)) {
@@ -393,6 +410,7 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'clearHarvestWeek': {
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const prefix = `${state.farmId}|${weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))}|`
       const harvestPicks = { ...state.harvestPicks }
       for (const key of Object.keys(harvestPicks)) {
@@ -402,6 +420,7 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'setGanttMeta':
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       return {
         ...state,
         ganttMeta: {
@@ -411,6 +430,7 @@ function reducer(state: AppState, action: Action): AppState {
       }
     case 'cycleGanttDay': {
       if (!canEditPlan(state)) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const cur = state.ganttDays[action.key]
       const ganttDays = { ...state.ganttDays }
       if (!cur) ganttDays[action.key] = 1
@@ -506,6 +526,7 @@ function reducer(state: AppState, action: Action): AppState {
       const user = currentUser(state)
       const activityId = action.activityId ?? state.activityId
       if (!user || user.role === 'manager' || !activityId) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       let people = state.people
       let warned = false
       const scoped = { ...state, activityId }
@@ -548,6 +569,7 @@ function reducer(state: AppState, action: Action): AppState {
       const user = currentUser(state)
       const activityId = action.activityId ?? state.activityId
       if (!user || user.role === 'manager' || !activityId) return state
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const slots =
         action.slots ?? Array.from({ length: SLOT_COUNT }, (_, i) => i)
       const cells = { ...state.cells }
@@ -676,6 +698,7 @@ function reducer(state: AppState, action: Action): AppState {
           message: 'Submit is disabled until Azure connectivity is restored.',
         })
       }
+      if (isPastWeekLocked(state)) return pastWeekLockedToast(state)
       const weekKey = weekKeyFromDate(new Date(state.weekStartISO + 'T00:00:00'))
       let filled = 0
       let plannedHours = 0

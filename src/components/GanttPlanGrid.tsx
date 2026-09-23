@@ -1,5 +1,5 @@
-import { GitBranch } from 'lucide-react'
-import { addDays, toISODate, weekDates } from '../lib/time'
+import { GitBranch, Lock } from 'lucide-react'
+import { addDays, isPastPlanningWeek, toISODate, weekDates } from '../lib/time'
 import { useStore } from '../store/AppContext'
 import type { PlanType } from '../types'
 
@@ -35,6 +35,8 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
   const title = planType === 'tearout-gantt' ? 'Tear-Out / Cleanout Gantt Schedule' : 'Planting Gantt Schedule'
   const weekStart = new Date(state.weekStartISO + 'T00:00:00')
   const dates = [...weekDates(weekStart), ...weekDates(addDays(weekStart, 7))]
+  const pastWeekLocked = isPastPlanningWeek(state.weekStartISO)
+  const canEditWeek = canPlan && !pastWeekLocked
 
   function metaKey(taskId: string) {
     return `${planType}|${state.farmId}|${state.weekStartISO}|${taskId}`
@@ -74,6 +76,12 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
 
   return (
     <section className="lp-panel mb-0 p-3">
+      {pastWeekLocked ? (
+        <p className="mb-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+          <Lock className="h-3.5 w-3.5" aria-hidden />
+          Past week — editing is locked.
+        </p>
+      ) : null}
       <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
@@ -119,7 +127,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                   <td className="p-2 font-bold text-ink">{task.name}</td>
                   <td className="p-1 text-center">
                     <input
-                      disabled={!canPlan}
+                      disabled={!canEditWeek}
                       value={String(m.rows)}
                       onChange={(e) => {
                         if (!/^\d*$/.test(e.target.value)) return
@@ -130,12 +138,12 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                           crew: m.crew,
                         })
                       }}
-                      className="lp-input w-14 px-1 py-1 text-center text-xs"
+                      className="lp-input w-14 px-1 py-1 text-center text-xs disabled:opacity-50"
                     />
                   </td>
                   <td className="p-1 text-center">
                     <input
-                      disabled={!canPlan}
+                      disabled={!canEditWeek}
                       value={String(m.crew)}
                       onChange={(e) => {
                         if (!/^\d*$/.test(e.target.value)) return
@@ -146,7 +154,7 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                           crew: Number(e.target.value || 0),
                         })
                       }}
-                      className="lp-input w-12 px-1 py-1 text-center text-xs"
+                      className="lp-input w-12 px-1 py-1 text-center text-xs disabled:opacity-50"
                     />
                   </td>
                   <td className="p-2 text-center tabular-nums font-semibold">{labor.toFixed(1)}</td>
@@ -159,12 +167,16 @@ export function GanttPlanGrid({ planType }: { planType: Extract<PlanType, 'tearo
                       <td key={date} className="border-l border-line p-0.5">
                         <button
                           type="button"
-                          disabled={!canPlan}
+                          disabled={!canEditWeek}
                           onClick={() => dispatch({ type: 'cycleGanttDay', key })}
-                          className={`flex h-8 w-full items-center justify-center rounded text-[10px] font-bold ${
-                            intensity
-                              ? INTENSITY[intensity]
-                              : 'bg-white text-slate-300 hover:bg-green-50'
+                          className={`flex h-8 w-full items-center justify-center rounded text-[10px] font-bold disabled:cursor-not-allowed ${
+                            pastWeekLocked
+                              ? intensity
+                                ? `${INTENSITY[intensity]} opacity-70`
+                                : 'bg-slate-100 text-slate-400'
+                              : intensity
+                                ? INTENSITY[intensity]
+                                : 'bg-white text-slate-300 hover:bg-green-50'
                           }`}
                         >
                           {intensity ? intensity : ''}

@@ -1,4 +1,5 @@
-export const SLOT_COUNT = 22
+/** Half-hour slots from 6:00 AM through 5:00 PM (American 12-hour labels). */
+export const SLOT_COUNT = 23
 export const DAY_START_HOUR = 6
 
 export function toISODate(d: Date): string {
@@ -37,6 +38,13 @@ export function isPastDay(iso: string, today = new Date()): boolean {
   return a < t
 }
 
+/** True when the planning week Monday is before the current week's Monday. */
+export function isPastPlanningWeek(weekStartISO: string, today = new Date()): boolean {
+  const weekStart = parseISODate(weekStartISO)
+  const currentWeekStart = startOfWeek(today)
+  return weekStart < currentWeekStart
+}
+
 export function isoWeek(d: Date): { year: number; week: number } {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
   const dayNum = date.getUTCDay() || 7
@@ -56,11 +64,14 @@ export function formatWeekRange(weekStart: Date): string {
   const { week } = isoWeek(weekStart)
   const sameMonth = weekStart.getMonth() === end.getMonth()
   const startLbl = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  const endLbl = end.toLocaleDateString('en-US', {
-    month: sameMonth ? undefined : 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  // Avoid day+year without month — some en-US engines render "2026 (day: 19)".
+  const endLbl = sameMonth
+    ? `${end.getDate()}, ${end.getFullYear()}`
+    : end.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
   return `Week ${week} · ${startLbl}–${endLbl}`
 }
 

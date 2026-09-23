@@ -1,9 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Search, Shield, Trash2, UserPlus, Warehouse } from 'lucide-react'
 import { directory } from '../data/mock'
+import { ADMIN_GROUPS } from '../lib/adminAccordion'
+import { useAdminAccordion } from '../lib/useAdminAccordion'
 import { roleLabel, useStore } from '../store/AppContext'
 import type { Role, User } from '../types'
 import { Accordion } from './Accordion'
+import { AdminActionBar } from './AdminActionBar'
 import {
   CalibrationCard,
   FarmDayShiftScheduler,
@@ -12,90 +15,79 @@ import {
 } from './AdminOps'
 import { Modal } from './Modal'
 
-export function AdminTab() {
-  const [openId, setOpenId] = useState(() => {
-    try {
-      return sessionStorage.getItem('lp-admin-accordion') || 'provision'
-    } catch {
-      return 'provision'
-    }
-  })
+const SECTION_CONTENT = {
+  provision: ProvisionCard,
+  directory: UserDirectory,
+  entities: EntityCards,
+  calibration: () => <CalibrationCard embedded />,
+  report: () => <ReportProvisioning embedded />,
+  shifts: () => <FarmDayShiftScheduler embedded />,
+  guardrails: () => <GuardrailsCard embedded />,
+} as const
 
-  function toggle(id: string) {
-    setOpenId((prev) => {
-      const next = prev === id ? '' : id
-      try {
-        sessionStorage.setItem('lp-admin-accordion', next || 'provision')
-      } catch {
-        /* ignore */
-      }
-      return next
-    })
-  }
+export function AdminTab() {
+  const { groupId, setGroup, openId, toggle, sections } = useAdminAccordion()
+  const activeGroup = ADMIN_GROUPS.find((group) => group.id === groupId) ?? ADMIN_GROUPS[0]
 
   return (
     <div className="lp-page flex flex-1 flex-col">
       <div className="mb-3">
         <p className="lp-kicker">Admin</p>
-        <h2 className="text-lg font-extrabold tracking-tight text-ink">Users and master data</h2>
-        <p className="text-xs text-slate-500">Open one section at a time — less scroll, fewer clicks.</p>
+        <h1 className="text-lg font-extrabold tracking-tight text-ink">Users and master data</h1>
+        <p className="text-xs text-slate-500">
+          Group related settings, then open one section at a time.
+        </p>
       </div>
-      <Accordion
-        id="provision"
-        title="Provision user via SSO"
-        open={openId === 'provision'}
-        onToggle={() => toggle('provision')}
+
+      <div
+        role="tablist"
+        aria-label="Admin groups"
+        className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3"
       >
-        <ProvisionCard />
-      </Accordion>
-      <Accordion
-        id="report"
-        title="Planning report provisioning"
-        open={openId === 'report'}
-        onToggle={() => toggle('report')}
-      >
-        <ReportProvisioning embedded />
-      </Accordion>
-      <Accordion
-        id="shifts"
-        title="Daily farm shift scheduler"
-        open={openId === 'shifts'}
-        onToggle={() => toggle('shifts')}
-      >
-        <FarmDayShiftScheduler embedded />
-      </Accordion>
-      <Accordion
-        id="guardrails"
-        title="Operational guardrails"
-        open={openId === 'guardrails'}
-        onToggle={() => toggle('guardrails')}
-      >
-        <GuardrailsCard embedded />
-      </Accordion>
-      <Accordion
-        id="directory"
-        title="User directory"
-        open={openId === 'directory'}
-        onToggle={() => toggle('directory')}
-      >
-        <UserDirectory />
-      </Accordion>
-      <Accordion
-        id="entities"
-        title="Manage farms, commodities, activities"
-        open={openId === 'entities'}
-        onToggle={() => toggle('entities')}
-      >
-        <EntityCards />
-      </Accordion>
-      <Accordion
-        id="calibration"
-        title="Activity speed calibration"
-        open={openId === 'calibration'}
-        onToggle={() => toggle('calibration')}
-      >
-        <CalibrationCard embedded />
-      </Accordion>
+        {ADMIN_GROUPS.map((group) => {
+          const selected = group.id === groupId
+          return (
+            <button
+              key={group.id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setGroup(group.id)}
+              className={`min-h-11 rounded-[10px] border px-3 py-2 text-left transition ${
+                selected
+                  ? 'border-brand bg-brand/10 text-ink shadow-sm'
+                  : 'border-line bg-white/90 text-slate-600 hover:border-brand/40 hover:bg-mist'
+              }`}
+            >
+              <span className="block text-xs font-extrabold tracking-wide uppercase">
+                {group.label}
+              </span>
+              <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">
+                {group.description}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <p className="mb-2 text-xs font-bold tracking-wide text-slate-400 uppercase">
+        {activeGroup.label}
+      </p>
+
+      {sections.map((section) => {
+        const Content = SECTION_CONTENT[section.id]
+        return (
+          <Accordion
+            key={section.id}
+            id={section.id}
+            title={section.title}
+            open={openId === section.id}
+            onToggle={() => toggle(section.id)}
+          >
+            <Content />
+          </Accordion>
+        )
+      })}
     </div>
   )
 }
@@ -126,6 +118,15 @@ function ProvisionCard() {
     setter(list.includes(id) ? list.filter((x) => x !== id) : [...list, id])
   }
 
+  function resetForm() {
+    setQuery('')
+    setSelectedId('')
+    setRole('')
+    setFarmIds([])
+    setCommodityIds([])
+    setActivityIds([])
+  }
+
   function save() {
     if (!person || !role) {
       dispatch({
@@ -144,13 +145,10 @@ function ProvisionCard() {
       activityIds: activityIds,
     }
     dispatch({ type: 'provisionUser', user })
-    setQuery('')
-    setSelectedId('')
-    setRole('')
-    setFarmIds([])
-    setCommodityIds([])
-    setActivityIds([])
+    resetForm()
   }
+
+  const canSave = Boolean(person && role)
 
   return (
     <div>
@@ -208,17 +206,17 @@ function ProvisionCard() {
         </div>
         <div>
           <label className="lp-label">Role selection</label>
-            <select
-              value={role}
-              onChange={(e) => {
-                const next = e.target.value as Role
-                setRole(next)
-                if (next === 'admin' || next === 'manager') {
-                  setFarmIds(state.farms.map((f) => f.id))
-                  setCommodityIds(state.commodities.map((c) => c.id))
-                  setActivityIds(state.activities.map((a) => a.id))
-                }
-              }}
+          <select
+            value={role}
+            onChange={(e) => {
+              const next = e.target.value as Role
+              setRole(next)
+              if (next === 'admin' || next === 'manager') {
+                setFarmIds(state.farms.map((f) => f.id))
+                setCommodityIds(state.commodities.map((c) => c.id))
+                setActivityIds(state.activities.map((a) => a.id))
+              }
+            }}
             className="lp-select mt-1 w-full px-4 py-2 text-sm"
           >
             <option value="">Select role…</option>
@@ -229,45 +227,31 @@ function ProvisionCard() {
         </div>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-8 rounded-[8px] border border-line bg-mist p-4 md:grid-cols-3">
-          <CheckList
-            title="Assign farm(s)"
-            items={state.farms}
-            selected={farmIds}
-            onToggle={(id) => toggle(farmIds, id, setFarmIds)}
-          />
-          <CheckList
-            title="Assign commodity"
-            items={state.commodities}
-            selected={commodityIds}
-            onToggle={(id) => toggle(commodityIds, id, setCommodityIds)}
-          />
-          <CheckList
-            title="Assign activity"
-            items={state.activities}
-            selected={activityIds}
-            onToggle={(id) => toggle(activityIds, id, setActivityIds)}
-          />
-        </div>
-      <div className="flex justify-center gap-4 border-t border-line pt-6">
-        <button
-          type="button"
-          onClick={() => {
-            setQuery('')
-            setSelectedId('')
-            setRole('')
-          }}
-          className="lp-btn-ghost px-8 py-2"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={save}
-          className="lp-btn-primary px-8 py-2"
-        >
-          Link & Save User
-        </button>
+        <CheckList
+          title="Assign farm(s)"
+          items={state.farms}
+          selected={farmIds}
+          onToggle={(id) => toggle(farmIds, id, setFarmIds)}
+        />
+        <CheckList
+          title="Assign commodity"
+          items={state.commodities}
+          selected={commodityIds}
+          onToggle={(id) => toggle(commodityIds, id, setCommodityIds)}
+        />
+        <CheckList
+          title="Assign activity"
+          items={state.activities}
+          selected={activityIds}
+          onToggle={(id) => toggle(activityIds, id, setActivityIds)}
+        />
       </div>
+      <AdminActionBar
+        onCancel={resetForm}
+        onPrimary={save}
+        primaryLabel="Link & Save User"
+        primaryDisabled={!canSave}
+      />
     </div>
   )
 }
@@ -317,7 +301,7 @@ function UserDirectory() {
 
   return (
     <div id="admin-users" className="overflow-hidden rounded-[8px] border border-line">
-      <div className="flex items-center justify-between border-b border-line bg-mist p-3">
+      <div className="flex flex-col gap-2 border-b border-line bg-mist p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-teal" />
           <h3 className="text-xs font-bold tracking-wide text-ink uppercase">Filter directory</h3>
@@ -326,7 +310,7 @@ function UserDirectory() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter users…"
-          className="lp-input w-64 px-4 py-1 text-xs"
+          className="lp-input w-full px-4 py-2 text-xs sm:w-64"
         />
       </div>
       <table className="w-full text-left text-xs">
@@ -453,37 +437,34 @@ function UserDirectory() {
                 })
               }
             />
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEditing(null)}
-                className="lp-btn-ghost px-4 py-2 text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  dispatch({ type: 'updateUser', user: editing })
-                  dispatch({
-                    type: 'toast',
-                    toast: { tone: 'success', title: 'User updated', message: `${editing.name}'s access was saved.` },
-                  })
-                  setEditing(null)
-                }}
-                className="lp-btn-primary px-4 py-2 text-sm"
-              >
-                Save
-              </button>
-            </div>
+            <AdminActionBar
+              onCancel={() => setEditing(null)}
+              onPrimary={() => {
+                dispatch({ type: 'updateUser', user: editing })
+                dispatch({
+                  type: 'toast',
+                  toast: {
+                    tone: 'success',
+                    title: 'User updated',
+                    message: `${editing.name}'s access was saved.`,
+                  },
+                })
+                setEditing(null)
+              }}
+              primaryLabel="Save"
+            />
           </div>
         )}
       </Modal>
 
       <Modal open={Boolean(confirmId)} title="Remove user?" onClose={() => setConfirmId(null)}>
         <p className="mb-4 text-sm text-slate-600">This removes the user from Labor Planner entitlements.</p>
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={() => setConfirmId(null)} className="lp-btn-ghost px-4 py-2 text-sm">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setConfirmId(null)}
+            className="lp-btn-ghost min-h-11 w-full px-4 py-2 text-sm sm:w-auto"
+          >
             Cancel
           </button>
           <button
@@ -492,7 +473,7 @@ function UserDirectory() {
               if (confirmId) dispatch({ type: 'deleteUser', id: confirmId })
               setConfirmId(null)
             }}
-            className="rounded-[8px] bg-red-600 px-4 py-2 text-sm font-bold text-white"
+            className="min-h-11 w-full rounded-[8px] bg-red-600 px-4 py-2 text-sm font-bold text-white sm:w-auto"
           >
             Delete
           </button>
@@ -596,13 +577,7 @@ function EntityCards() {
                 </label>
               )
             })}
-            <button
-              type="button"
-              onClick={() => setCropFarm(null)}
-              className="lp-btn-primary mt-3 px-4 py-2 text-sm"
-            >
-              Done
-            </button>
+            <AdminActionBar onPrimary={() => setCropFarm(null)} primaryLabel="Done" />
           </div>
         )}
       </Modal>
@@ -629,29 +604,23 @@ function EntityCards() {
                 autoFocus
               />
             </label>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setEditing(null)} className="lp-btn-ghost px-4 py-2 text-sm">
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const name = editing.name.trim()
-                  if (!name) return
-                  if (editing.kind === 'farm') dispatch({ type: 'renameFarm', id: editing.id, name })
-                  if (editing.kind === 'commodity') dispatch({ type: 'renameCommodity', id: editing.id, name })
-                  if (editing.kind === 'activity') dispatch({ type: 'renameActivity', id: editing.id, name })
-                  dispatch({
-                    type: 'toast',
-                    toast: { tone: 'success', title: 'Updated', message: `Renamed to ${name}.` },
-                  })
-                  setEditing(null)
-                }}
-                className="lp-btn-primary px-4 py-2 text-sm"
-              >
-                Save
-              </button>
-            </div>
+            <AdminActionBar
+              onCancel={() => setEditing(null)}
+              onPrimary={() => {
+                const name = editing.name.trim()
+                if (!name) return
+                if (editing.kind === 'farm') dispatch({ type: 'renameFarm', id: editing.id, name })
+                if (editing.kind === 'commodity') dispatch({ type: 'renameCommodity', id: editing.id, name })
+                if (editing.kind === 'activity') dispatch({ type: 'renameActivity', id: editing.id, name })
+                dispatch({
+                  type: 'toast',
+                  toast: { tone: 'success', title: 'Updated', message: `Renamed to ${name}.` },
+                })
+                setEditing(null)
+              }}
+              primaryLabel="Save"
+              primaryDisabled={!editing.name.trim()}
+            />
           </div>
         )}
       </Modal>
@@ -695,7 +664,7 @@ function EntityColumn({
           placeholder={placeholder}
           className="lp-input flex-1 px-3 py-1.5 text-sm"
         />
-        <button type="button" onClick={onAdd} className="lp-btn-primary px-3 py-1.5">
+        <button type="button" onClick={onAdd} className="lp-btn-primary min-h-11 min-w-11 px-3 py-1.5">
           +
         </button>
       </div>

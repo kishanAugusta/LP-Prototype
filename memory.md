@@ -242,7 +242,7 @@ Farm Planners only see their assigned farms’ data. Site Managers and Admins se
 
 - Tokens: Sunset-adjacent produce green (`#2db84b`), warm mist page, brand accent bar on header
 - Sticky context bars on Planner + Summary; Notes / Analytics in accordions
-- Admin: single-open accordion sections (session-remembered)
+- Admin: grouped Users / Master data / Ops config tabs; single-open accordions per group (session-remembered)
 - Embed framing: “Sunset Grown · Mastronardi Produce · Farm ops module”
 - Goal: primary grid/table usable without scrolling past chrome on ~1440×900
 - Visual polish: soft page atmosphere (green/orange radials), glass sticky bars, gradient primary buttons, richer login hero + navy header, elevated KPI cards
@@ -440,7 +440,9 @@ Last-week (and two-weeks-ago North/Beef/Clipping) rows are **already submitted**
 | `src/components/PlannerTab.tsx` | Horizon, filters, rec banner, notes, submit, reason modal |
 | `src/components/ScheduleGrid.tsx` | Click-and-drag 30-min grid |
 | `src/components/SummaryTab.tsx` | Filters, KPIs, table, pie allocation, bar planned-vs-actual |
-| `src/components/AdminTab.tsx` | Provision, directory, entities |
+| `src/components/AdminTab.tsx` | Group tabs, provision, directory, entities |
+| `src/components/AdminActionBar.tsx` | Shared Cancel + primary Save footer |
+| `src/lib/adminAccordion.ts` | Admin group/section map + sessionStorage |
 | `src/components/AdminOps.tsx` | Reports, shifts, guardrails, calibration |
 | `src/components/FarmMapModal.tsx` | Greenhouse house map |
 | `src/components/MonthlyBudgetGrid.tsx` | 12-month planned hours / rate / budget |

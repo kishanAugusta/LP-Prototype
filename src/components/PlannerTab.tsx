@@ -1,11 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Lock, MapPin } from 'lucide-react'
-import {
-  formatWeekRange,
-  isoWeek,
-  toISODate,
-  weeksInYear,
-} from '../lib/time'
+import { formatWeekRange, toISODate, weeksInYear } from '../lib/time'
+import { isPastWeeklyPlanLocked } from '../lib/temporalLock'
 import { useStore } from '../store/AppContext'
 import { Accordion } from './Accordion'
 import { AnnualLaborBudgetGrid } from './AnnualLaborBudgetGrid'
@@ -31,6 +27,8 @@ export function PlannerTab() {
   const [annualOpen, setAnnualOpen] = useState(false)
   const yearWeeks = weeksInYear(state.year)
   const showWeek = state.planType !== 'labor-monthly'
+  const pastWeekLocked = isPastWeeklyPlanLocked(state.planType, state.weekStartISO)
+  const canSubmit = Boolean(state.online && canPlan && !pastWeekLocked)
   const showCommodity =
     state.planType === 'labor-weekly' ||
     state.planType === 'labor-monthly' ||
@@ -73,10 +71,9 @@ export function PlannerTab() {
               >
                 {yearWeeks.map((w) => {
                   const iso = toISODate(w)
-                  const { week } = isoWeek(w)
                   return (
                     <option key={iso} value={iso}>
-                      Week {week} · {formatWeekRange(w).split(' · ')[1]}
+                      {formatWeekRange(w)}
                     </option>
                   )
                 })}
@@ -248,9 +245,10 @@ export function PlannerTab() {
             </button>
             <button
               type="button"
-              disabled={!state.online || !canPlan}
+              disabled={!canSubmit}
+              title={pastWeekLocked ? 'Past week — submit is locked' : undefined}
               onClick={() => dispatch({ type: 'requestSubmit' })}
-              className="lp-btn-primary px-6 py-2 text-sm"
+              className="lp-btn-primary px-6 py-2 text-sm disabled:opacity-40"
             >
               Submit Plan
             </button>
@@ -260,9 +258,10 @@ export function PlannerTab() {
           <div className="mt-2 flex justify-end">
             <button
               type="button"
-              disabled={!state.online || !canPlan}
+              disabled={!canSubmit}
+              title={pastWeekLocked ? 'Past week — submit is locked' : undefined}
               onClick={() => dispatch({ type: 'requestSubmit' })}
-              className="lp-btn-primary px-6 py-2 text-sm"
+              className="lp-btn-primary px-6 py-2 text-sm disabled:opacity-40"
             >
               Submit Plan
             </button>

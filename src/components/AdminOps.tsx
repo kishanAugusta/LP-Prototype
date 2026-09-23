@@ -15,6 +15,7 @@ import type {
   LogicRequirement,
   PlanningReport,
 } from '../types'
+import { AdminActionBar } from './AdminActionBar'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const BUFFER_LABELS: Record<LogicBuffer, string> = {
@@ -96,24 +97,19 @@ export function ReportProvisioning({ embedded = false }: { embedded?: boolean })
           onToggle={(id) => toggleReportIds(report, 'activityIds', id, dispatch)}
         />
       </div>
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={() =>
-            dispatch({
-              type: 'toast',
-              toast: {
-                tone: 'success',
-                title: 'Report config saved',
-                message: `${report.name} scope was saved for Power BI publishing.`,
-              },
-            })
-          }
-          className="rounded-[8px] bg-[#5b4b8a] px-5 py-2 text-sm font-bold text-white hover:bg-[#4a3c72]"
-        >
-          Save Report Config
-        </button>
-      </div>
+      <AdminActionBar
+        onPrimary={() =>
+          dispatch({
+            type: 'toast',
+            toast: {
+              tone: 'success',
+              title: 'Report config saved',
+              message: `${report.name} scope was saved for Power BI publishing.`,
+            },
+          })
+        }
+        primaryLabel="Save Report Config"
+      />
     </>
   )
 
@@ -266,24 +262,19 @@ export function FarmDayShiftScheduler({ embedded = false }: { embedded?: boolean
           </tbody>
         </table>
       </div>
-      <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          onClick={() =>
-            dispatch({
-              type: 'toast',
-              toast: {
-                tone: 'success',
-                title: 'Schedules saved',
-                message: 'Farm day work windows were stored for this prototype session.',
-              },
-            })
-          }
-          className="rounded-[8px] bg-sunset px-5 py-2 text-sm font-bold text-white"
-        >
-          Save Schedules
-        </button>
-      </div>
+      <AdminActionBar
+        onPrimary={() =>
+          dispatch({
+            type: 'toast',
+            toast: {
+              tone: 'success',
+              title: 'Schedules saved',
+              message: 'Farm day work windows were stored for this prototype session.',
+            },
+          })
+        }
+        primaryLabel="Save Schedules"
+      />
     </section>
   )
 }
@@ -398,9 +389,16 @@ export function GuardrailsCard({ embedded = false }: { embedded?: boolean }) {
             </option>
           ))}
         </select>
-        <button type="button" onClick={save} className="lp-btn-primary px-3 py-2 text-sm">
-          {editing ? 'Save' : '+ Add'}
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={save} className="lp-btn-primary min-h-11 flex-1 px-3 py-2 text-sm">
+            {editing ? 'Save' : '+ Add'}
+          </button>
+          {editing && (
+            <button type="button" onClick={reset} className="lp-btn-ghost min-h-11 px-3 py-2 text-sm">
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
 
       <p className="mb-2 text-xs font-bold tracking-wide text-slate-400 uppercase">Active logic gates</p>
@@ -492,11 +490,10 @@ export function CalibrationCard({ embedded = false }: { embedded?: boolean }) {
           )
         })}
       </div>
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-slate-500">Enter target completion time in minutes per row.</p>
-        <button
-          type="button"
-          onClick={() =>
+      <div className="mt-4">
+        <p className="mb-3 text-xs text-slate-500">Enter target completion time in minutes per row.</p>
+        <AdminActionBar
+          onPrimary={() =>
             dispatch({
               type: 'toast',
               toast: {
@@ -506,10 +503,8 @@ export function CalibrationCard({ embedded = false }: { embedded?: boolean }) {
               },
             })
           }
-          className="rounded-[8px] bg-navy px-5 py-2 text-sm font-bold text-white"
-        >
-          Save Calibration
-        </button>
+          primaryLabel="Save Calibration"
+        />
       </div>
     </section>
   )

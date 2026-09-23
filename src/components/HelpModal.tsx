@@ -175,8 +175,8 @@ function Planner() {
       </p>
       <ul className="list-disc space-y-1 pl-5">
         <li>
-          <strong>Labor (Weekly)</strong> — bi-weekly 14-day; expand an activity, then click-drag to
-          paint. Use Erase, People = 0, or Clear activity to remove labor.
+          <strong>Labor (Weekly)</strong> — 7/14-day view; expand an activity, then drag a
+          square to paint. People 0 or matching a filled cell erases. Past weeks are locked.
         </li>
         <li>
           <strong>Labor (Monthly Budget)</strong> — enter people or planned hours per month; optional
@@ -238,8 +238,8 @@ function Admin() {
         <li>
           Also: planning report provisioning (farms, commodities, activities per report), daily farm
           shift scheduler, operational guardrails (add/edit conditions), and activity speed
-          calibration (minutes per row). Admin sections open one-at-a-time in accordions to reduce
-          scroll.
+          calibration (minutes per row). Admin is grouped into Users / Master data / Ops config;
+          each group shows only its accordions (one open at a time).
         </li>
       </ul>
     </div>

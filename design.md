@@ -219,7 +219,7 @@ Duration: `0.32s cubic-bezier(0.22, 1, 0.36, 1)` on pages; `0.2s` on accordion b
 | Planner | `PlannerTab.tsx` | `ScheduleGrid`, `BiWeeklyLaborGrid`, `MonthlyBudgetGrid`, `HarvestPlanGrid`, `GanttPlanGrid`, `AnnualLaborBudgetGrid`, `FarmMapModal` |
 | Summary | `SummaryTab.tsx` | Filters, KPI cards, charts, detail table, notes link |
 | Map | `MapViewTab.tsx` | Farm chips + `FarmMapModal` |
-| Admin | `AdminTab.tsx` | `Accordion` sections, `AdminOps` cards |
+| Admin | `AdminTab.tsx` | Group tabs + Accordion sections, `AdminOps` cards, `AdminActionBar` |
 
 ### Shared primitives
 
@@ -316,9 +316,11 @@ Duration: `0.32s cubic-bezier(0.22, 1, 0.36, 1)` on pages; `0.2s` on accordion b
 
 ### 10.6 Admin tab
 
-- Page intro kicker + title
-- **Single-open accordion** (state in `sessionStorage` key `lp-admin-accordion`)
-- Sections: Provision SSO, Report provisioning, Shift scheduler, Guardrails, User directory, Entity management, Calibration
+- Page intro: kicker `Admin`, title `Users and master data`, helper text about grouping
+- **3 group tabs** (Users / Master data / Ops config) — `sessionStorage` key `lp-admin-group`
+- Only that group’s **accordions** render; single-open via `lp-admin-accordion`
+- Shared **Cancel + primary** footer (`AdminActionBar`) on save flows; mobile stacks full-width
+- Sections: Provision SSO, User directory | Farms/commodities/activities, Calibration | Reports, Shifts, Guardrails
 
 ### 10.7 Map view
 
